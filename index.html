@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>P2P Messenger - QR Connect</title>
     <style>
         * {
@@ -15,7 +14,7 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #0f172a;
             min-height: 100vh;
             padding: 12px;
@@ -24,7 +23,6 @@
         .app {
             max-width: 1400px;
             margin: 0 auto;
-            position: relative;
         }
 
         /* Уведомления */
@@ -44,7 +42,7 @@
         .notification {
             background: white;
             border-radius: 16px;
-            padding: 16px;
+            padding: 14px 16px;
             box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2);
             display: flex;
             align-items: center;
@@ -55,126 +53,21 @@
         }
 
         @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
 
-        @keyframes slideOut {
-            from {
-                transform: translateX(0);
-                opacity: 1;
-            }
-            to {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-        }
+        .notification.success { border-left-color: #10b981; }
+        .notification.error { border-left-color: #ef4444; }
+        .notification.info { border-left-color: #3b82f6; }
+        .notification.warning { border-left-color: #f59e0b; }
 
-        .notification.success {
-            border-left-color: #10b981;
-        }
-        .notification.error {
-            border-left-color: #ef4444;
-        }
-        .notification.info {
-            border-left-color: #3b82f6;
-        }
-        .notification.warning {
-            border-left-color: #f59e0b;
-        }
+        .notification-icon { font-size: 22px; }
+        .notification-content { flex: 1; }
+        .notification-title { font-weight: 600; font-size: 14px; margin-bottom: 2px; }
+        .notification-message { font-size: 12px; color: #666; }
+        .notification-close { cursor: pointer; font-size: 18px; color: #999; }
 
-        .notification-icon {
-            font-size: 24px;
-        }
-        .notification-content {
-            flex: 1;
-        }
-        .notification-title {
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-        .notification-message {
-            font-size: 13px;
-            color: #666;
-        }
-        .notification-close {
-            cursor: pointer;
-            font-size: 20px;
-            color: #999;
-            padding: 0 4px;
-        }
-        .notification-close:hover {
-            color: #333;
-        }
-
-        /* Модальное окно запроса */
-        .request-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 10001;
-            animation: fadeIn 0.2s ease;
-        }
-
-        .request-modal-content {
-            background: white;
-            border-radius: 24px;
-            padding: 24px;
-            max-width: 90%;
-            width: 360px;
-            text-align: center;
-        }
-
-        .request-avatar {
-            width: 70px;
-            height: 70px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 16px;
-            font-size: 32px;
-            color: white;
-        }
-
-        .request-buttons {
-            display: flex;
-            gap: 12px;
-            margin-top: 20px;
-        }
-
-        .request-buttons button {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .btn-accept {
-            background: #10b981;
-            color: white;
-        }
-        .btn-reject {
-            background: #ef4444;
-            color: white;
-        }
-
-        /* Остальные стили */
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 24px;
@@ -182,18 +75,10 @@
             margin-bottom: 20px;
             color: white;
             text-align: center;
-            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2);
         }
 
-        .header h1 {
-            font-size: 1.8rem;
-            margin-bottom: 8px;
-        }
-
-        .header p {
-            opacity: 0.9;
-            font-size: 0.9rem;
-        }
+        .header h1 { font-size: 1.6rem; margin-bottom: 6px; }
+        .header p { opacity: 0.9; font-size: 0.85rem; }
 
         .grid {
             display: flex;
@@ -203,7 +88,7 @@
 
         .sidebar {
             flex: 1;
-            min-width: 320px;
+            min-width: 300px;
             background: white;
             border-radius: 24px;
             padding: 20px;
@@ -213,7 +98,7 @@
 
         .chat-panel {
             flex: 2;
-            min-width: 320px;
+            min-width: 300px;
             background: white;
             border-radius: 24px;
             display: flex;
@@ -232,32 +117,31 @@
         }
 
         .avatar {
-            width: 60px;
-            height: 60px;
+            width: 55px;
+            height: 55px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 12px;
-            font-size: 28px;
-            font-weight: bold;
+            margin: 0 auto 10px;
+            font-size: 24px;
             color: white;
         }
 
         .user-id {
             font-family: monospace;
             background: white;
-            padding: 12px;
+            padding: 10px;
             border-radius: 12px;
-            font-size: 12px;
+            font-size: 11px;
             word-break: break-all;
-            margin: 12px 0;
+            margin: 10px 0;
             border: 1px solid #e0e0e0;
         }
 
         .btn {
-            padding: 12px 20px;
+            padding: 10px 16px;
             border: none;
             border-radius: 12px;
             font-size: 14px;
@@ -272,21 +156,9 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
-
-        .btn-primary:active {
-            transform: scale(0.98);
-        }
-
-        .btn-success {
-            background: #10b981;
-            color: white;
-        }
-
-        .btn-outline {
-            background: white;
-            border: 2px solid #667eea;
-            color: #667eea;
-        }
+        .btn-success { background: #10b981; color: white; }
+        .btn-outline { background: white; border: 2px solid #667eea; color: #667eea; }
+        .btn-danger { background: #ef4444; color: white; }
 
         .qr-section {
             background: #f8f9fa;
@@ -298,47 +170,103 @@
 
         .qr-container {
             background: white;
-            padding: 20px;
+            padding: 15px;
             border-radius: 16px;
             display: inline-block;
             margin: 10px 0;
         }
 
-        #qrcode {
-            display: flex;
-            justify-content: center;
-        }
-
-        canvas, #qrcode img {
-            width: 200px;
-            height: 200px;
+        #qrcode canvas, #qrcode img {
+            width: 180px;
+            height: 180px;
         }
 
         .text-code {
             font-family: monospace;
             font-size: 10px;
             word-break: break-all;
-            background: #f0f0f0;
+            background: white;
             padding: 8px;
             border-radius: 8px;
             margin: 8px 0;
+            border: 1px solid #e0e0e0;
         }
 
-        .flex-buttons {
+        /* Панель запросов */
+        .requests-panel {
+            margin-top: 20px;
+            border-top: 1px solid #e0e0e0;
+            padding-top: 20px;
+        }
+
+        .requests-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
             display: flex;
-            gap: 8px;
-            margin-top: 8px;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .flex-buttons .btn {
+        .request-card {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .request-user {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+            word-break: break-all;
+        }
+
+        .request-time {
+            font-size: 10px;
+            color: #666;
+            margin-bottom: 12px;
+        }
+
+        .request-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .request-buttons button {
             flex: 1;
-            margin-top: 0;
+            padding: 8px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .accept-request {
+            background: #10b981;
+            color: white;
+        }
+
+        .reject-request {
+            background: #ef4444;
+            color: white;
+        }
+
+        .no-requests {
+            text-align: center;
+            color: #999;
+            padding: 20px;
+            font-size: 13px;
         }
 
         .chats-list {
             margin-top: 20px;
             border-top: 1px solid #e0e0e0;
             padding-top: 20px;
+            max-height: 250px;
+            overflow-y: auto;
         }
 
         .chat-item {
@@ -352,49 +280,38 @@
             justify-content: space-between;
             align-items: center;
         }
-
-        .chat-item.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
+        .chat-item.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
 
         .chat-header {
-            padding: 20px;
+            padding: 16px 20px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
-
-        .connection-status {
-            font-size: 12px;
-            opacity: 0.9;
-            margin-top: 5px;
-        }
+        .connection-status { font-size: 12px; opacity: 0.9; margin-top: 4px; }
 
         .messages {
             flex: 1;
             overflow-y: auto;
-            padding: 20px;
+            padding: 16px;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
             background: #fafafa;
         }
 
         .message {
             max-width: 80%;
-            padding: 10px 14px;
+            padding: 8px 12px;
             border-radius: 18px;
             word-wrap: break-word;
-            animation: fadeIn 0.3s ease;
+            animation: fadeIn 0.2s ease;
         }
-
         .message.sent {
             align-self: flex-end;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border-bottom-right-radius: 4px;
         }
-
         .message.received {
             align-self: flex-start;
             background: white;
@@ -402,18 +319,18 @@
             border-bottom-left-radius: 4px;
             box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
+        .message-info { font-size: 10px; margin-bottom: 4px; opacity: 0.7; }
 
         .input-area {
-            padding: 20px;
+            padding: 16px;
             background: white;
             border-top: 1px solid #e0e0e0;
             display: flex;
-            gap: 12px;
+            gap: 10px;
         }
-
         #messageInput {
             flex: 1;
-            padding: 12px;
+            padding: 10px 14px;
             border: 1px solid #e0e0e0;
             border-radius: 24px;
             resize: none;
@@ -421,9 +338,8 @@
             font-size: 14px;
             outline: none;
         }
-
         #sendBtn {
-            padding: 12px 24px;
+            padding: 10px 20px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
@@ -431,24 +347,17 @@
             cursor: pointer;
             font-weight: 600;
         }
+        #sendBtn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        #sendBtn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         @media (max-width: 768px) {
             body { padding: 8px; }
             .grid { flex-direction: column; }
             .sidebar { min-width: auto; order: 2; }
-            .chat-panel { min-width: auto; height: 60vh; order: 1; }
+            .chat-panel { min-width: auto; height: 55vh; order: 1; }
             .message { max-width: 90%; }
             .notification-container { top: 10px; right: 10px; max-width: calc(100% - 20px); }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -459,7 +368,7 @@
         
         <div class="header">
             <h1>🔗 P2P Messenger</h1>
-            <p>QR код • Мгновенное подключение</p>
+            <p>Сканируй QR — принимай запрос — общайся</p>
         </div>
         
         <div class="grid">
@@ -468,26 +377,30 @@
                     <div class="avatar" id="avatar">👤</div>
                     <h3>Ваш ID</h3>
                     <div class="user-id" id="userId"></div>
-                    <div class="flex-buttons">
-                        <button class="btn btn-outline" onclick="copyUserId()">📋 Копировать</button>
-                        <button class="btn btn-outline" onclick="refreshQR()">🔄 Обновить QR</button>
-                    </div>
+                    <button class="btn btn-outline" onclick="copyUserId()">📋 Копировать ID</button>
                 </div>
 
                 <div class="qr-section">
                     <h3>📱 Ваш QR код</h3>
+                    <p style="font-size: 12px; color: #666; margin-bottom: 8px;">Друг сканирует и отправляет запрос</p>
                     <div class="qr-container" id="qrcode"></div>
                     <div class="text-code" id="textCode"></div>
-                    <div class="flex-buttons">
-                        <button class="btn btn-outline" onclick="copyTextCode()">📋 Копировать код</button>
-                        <button class="btn btn-outline" onclick="shareCode()">📤 Поделиться</button>
-                    </div>
+                    <button class="btn btn-outline" onclick="copyTextCode()">📋 Копировать код-приглашение</button>
                 </div>
 
                 <div class="qr-section">
                     <h3>🔌 Подключиться к другу</h3>
-                    <textarea id="connectCode" rows="2" placeholder="Вставьте код приглашения друга" style="width:100%; padding:10px; border-radius:12px; border:1px solid #e0e0e0; margin:10px 0;"></textarea>
+                    <textarea id="connectCode" rows="2" placeholder="Вставьте код приглашения друга или отсканируйте QR" style="width:100%; padding:10px; border-radius:12px; border:1px solid #e0e0e0; margin:10px 0; font-size: 11px;"></textarea>
                     <button class="btn btn-primary" onclick="sendConnectionRequest()">📨 Отправить запрос</button>
+                </div>
+
+                <!-- Панель входящих запросов -->
+                <div class="requests-panel">
+                    <div class="requests-title">
+                        <span>📞 Входящие запросы</span>
+                        <span id="requestsCount" style="background: #ef4444; color: white; padding: 2px 8px; border-radius: 20px; font-size: 11px;">0</span>
+                    </div>
+                    <div id="requestsList"></div>
                 </div>
 
                 <div class="chats-list">
@@ -520,31 +433,28 @@
             ]
         };
 
-        // Глобальные переменные
+        // Переменные
         let peerConnection = null;
         let dataChannel = null;
         let currentPeerId = null;
         let myId = generateUserId();
-        let pendingRequests = new Map(); // Храним ожидающие запросы
-        let activeConnections = new Map(); // Активные соединения
         
-        // Хранилище чатов
+        // Хранилище запросов (каждый запрос содержит offer и информацию)
+        let pendingRequests = []; // массив { id, from, offer, timestamp }
+        let nextRequestId = 1;
+        
+        // Активные соединения
+        let activeConnections = new Map(); // peerId -> { pc, dc }
+        
         let chats = loadChats();
         let currentChat = null;
 
-        // Уведомления
-        function showNotification(title, message, type = 'info', duration = 4000) {
+        // ========== УВЕДОМЛЕНИЯ ==========
+        function showNotification(title, message, type = 'info', duration = 3500) {
             const container = document.getElementById('notificationContainer');
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;
-            
-            const icons = {
-                success: '✅',
-                error: '❌',
-                info: 'ℹ️',
-                warning: '⚠️'
-            };
-            
+            const icons = { success: '✅', error: '❌', info: 'ℹ️', warning: '⚠️' };
             notification.innerHTML = `
                 <div class="notification-icon">${icons[type] || 'ℹ️'}</div>
                 <div class="notification-content">
@@ -553,16 +463,14 @@
                 </div>
                 <div class="notification-close" onclick="this.parentElement.remove()">✕</div>
             `;
-            
             container.appendChild(notification);
-            
             setTimeout(() => {
                 notification.style.animation = 'slideOut 0.3s ease';
                 setTimeout(() => notification.remove(), 300);
             }, duration);
         }
 
-        // Генерация ID
+        // ========== ХРАНЕНИЕ ==========
         function generateUserId() {
             let saved = localStorage.getItem('myUserId');
             if (saved) return saved;
@@ -573,7 +481,6 @@
             return newId;
         }
 
-        // Загрузка чатов
         function loadChats() {
             const saved = localStorage.getItem('p2pChats');
             if (saved) {
@@ -591,7 +498,6 @@
             return {};
         }
 
-        // Сохранение чатов
         function saveChats() {
             const toSave = {};
             for (let id in chats) {
@@ -606,50 +512,29 @@
             localStorage.setItem('p2pChats', JSON.stringify(toSave));
         }
 
-        // Сохранение сообщения
         function saveMessage(peerId, message, isSent) {
             if (!chats[peerId]) {
-                chats[peerId] = {
-                    name: peerId,
-                    lastSeen: new Date(),
-                    messages: []
-                };
+                chats[peerId] = { name: peerId, lastSeen: new Date(), messages: [] };
             }
-            chats[peerId].messages.push({
-                text: message,
-                isSent: isSent,
-                timestamp: new Date()
-            });
+            chats[peerId].messages.push({ text: message, isSent, timestamp: new Date() });
             chats[peerId].lastSeen = new Date();
             saveChats();
             updateChatsList();
-            
-            if (currentChat === peerId) {
-                displayMessages(peerId);
-            }
+            if (currentChat === peerId) displayMessages(peerId);
         }
 
-        // Обновление списка чатов
         function updateChatsList() {
             const container = document.getElementById('chatsList');
             const sorted = Object.entries(chats).sort((a, b) => b[1].lastSeen - a[1].lastSeen);
-            
             container.innerHTML = sorted.map(([id, chat]) => `
                 <div class="chat-item ${currentChat === id ? 'active' : ''}" onclick="selectChat('${id}')">
-                    <div>
-                        <div class="chat-name">${id.substr(0, 12)}...</div>
-                        <div class="chat-time">${formatTime(chat.lastSeen)}</div>
-                    </div>
+                    <div><div class="chat-name">${id.substr(0, 12)}...</div></div>
                     <div>💬 ${chat.messages.length}</div>
                 </div>
             `).join('');
-            
-            if (sorted.length === 0) {
-                container.innerHTML = '<div style="text-align:center; color:#999; padding:20px;">Нет чатов</div>';
-            }
+            if (sorted.length === 0) container.innerHTML = '<div style="text-align:center; color:#999; padding:20px;">Нет чатов</div>';
         }
 
-        // Выбор чата
         function selectChat(peerId) {
             currentChat = peerId;
             currentPeerId = peerId;
@@ -657,28 +542,25 @@
             displayMessages(peerId);
             updateChatsList();
             
-            // Проверяем активное соединение
-            if (activeConnections.has(peerId)) {
-                updateConnectionStatus('connected', '✅ Подключено');
+            const conn = activeConnections.get(peerId);
+            if (conn && conn.dc && conn.dc.readyState === 'open') {
                 document.getElementById('sendBtn').disabled = false;
+                updateConnectionStatus('connected', '✅ Подключено');
             } else {
-                updateConnectionStatus('disconnected', '❌ Не подключен');
                 document.getElementById('sendBtn').disabled = true;
+                updateConnectionStatus('disconnected', '❌ Не подключен');
             }
         }
 
-        // Отображение сообщений
         function displayMessages(peerId) {
             const container = document.getElementById('messages');
             const messages = chats[peerId]?.messages || [];
-            
             container.innerHTML = messages.map(msg => `
                 <div class="message ${msg.isSent ? 'sent' : 'received'}">
                     <div class="message-info">${msg.isSent ? 'Вы' : peerId.substr(0, 8)} • ${formatTime(msg.timestamp)}</div>
                     <div>${escapeHtml(msg.text)}</div>
                 </div>
             `).join('');
-            
             container.scrollTop = container.scrollHeight;
         }
 
@@ -691,245 +573,272 @@
             return d.toLocaleDateString();
         }
 
-        // Генерация QR кода
-        function generateConnectionCode() {
-            const connectionData = {
-                type: 'connection_request',
-                from: myId,
-                timestamp: Date.now()
-            };
+        // ========== QR КОД (содержит готовый offer) ==========
+        async function generateQRWithOffer() {
+            const pc = new RTCPeerConnection(configuration);
+            const dc = pc.createDataChannel('chat');
             
-            const code = JSON.stringify(connectionData);
-            const textCodeElem = document.getElementById('textCode');
-            textCodeElem.textContent = code;
+            return new Promise(async (resolve) => {
+                let offerData = null;
+                
+                pc.onicecandidate = (event) => {
+                    if (event.candidate === null && offerData) {
+                        resolve(offerData);
+                    }
+                };
+                
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+                
+                setTimeout(() => {
+                    if (pc.localDescription) {
+                        offerData = {
+                            type: 'offer',
+                            sdp: pc.localDescription.sdp,
+                            from: myId,
+                            timestamp: Date.now()
+                        };
+                        if (pc.iceGatheringState === 'complete') {
+                            resolve(offerData);
+                        } else {
+                            setTimeout(() => resolve(offerData), 500);
+                        }
+                    }
+                }, 1000);
+            });
+        }
+
+        async function updateQR() {
+            showNotification('Генерация QR', 'Создаем приглашение...', 'info', 1000);
+            const offerData = await generateQRWithOffer();
+            const code = JSON.stringify(offerData);
             
+            document.getElementById('textCode').textContent = code;
             const qrcodeDiv = document.getElementById('qrcode');
             qrcodeDiv.innerHTML = '';
             new QRCode(qrcodeDiv, {
                 text: code,
-                width: 200,
-                height: 200,
+                width: 180,
+                height: 180,
                 colorDark: '#667eea',
-                colorLight: '#ffffff',
-                correctLevel: QRCode.CorrectLevel.H
+                colorLight: '#ffffff'
             });
             
-            return code;
-        }
-
-        function refreshQR() {
-            generateConnectionCode();
-            showNotification('QR обновлен', 'Новый QR код сгенерирован', 'success', 2000);
+            showNotification('Готово', 'QR код создан, друг может сканировать', 'success', 2000);
         }
 
         function copyTextCode() {
             const code = document.getElementById('textCode').textContent;
-            navigator.clipboard.writeText(code);
-            showNotification('Скопировано', 'Код скопирован в буфер обмена', 'success', 2000);
-        }
-
-        function shareCode() {
-            const code = document.getElementById('textCode').textContent;
-            if (navigator.share) {
-                navigator.share({
-                    title: 'P2P Messenger приглашение',
-                    text: code
-                });
-            } else {
-                copyTextCode();
+            if (code) {
+                navigator.clipboard.writeText(code);
+                showNotification('Скопировано', 'Код-приглашение скопирован', 'success', 1500);
             }
         }
 
-        // Отправка запроса на подключение
+        function copyUserId() {
+            navigator.clipboard.writeText(myId);
+            showNotification('Скопировано', 'Ваш ID скопирован', 'success', 1500);
+        }
+
+        // ========== ОТПРАВКА ЗАПРОСА (сканирование QR) ==========
         async function sendConnectionRequest() {
             const code = document.getElementById('connectCode').value.trim();
             if (!code) {
-                showNotification('Ошибка', 'Введите код приглашения', 'error', 3000);
+                showNotification('Ошибка', 'Вставьте код приглашения', 'error', 2000);
                 return;
             }
             
             try {
-                const data = JSON.parse(code);
-                if (data.type === 'connection_request') {
-                    showNotification('Запрос отправлен', `Отправляем запрос пользователю ${data.from.substr(0, 12)}...`, 'info', 2000);
-                    await initiateConnection(data.from);
-                } else {
-                    throw new Error('Неверный формат');
+                const offerData = JSON.parse(code);
+                if (offerData.type !== 'offer') throw new Error('Неверный формат');
+                if (offerData.from === myId) {
+                    showNotification('Ошибка', 'Это ваш собственный QR код', 'warning', 2000);
+                    return;
                 }
+                
+                showNotification('Запрос отправлен', `Отправляем запрос пользователю ${offerData.from.substr(0, 12)}...`, 'success', 2000);
+                
+                // Отправляем запрос - показываем его в панели запросов у получателя
+                // В реальном приложении здесь нужно отправить через signaling сервер
+                // Для демо используем localStorage событие
+                addIncomingRequest(offerData.from, offerData);
+                
+                document.getElementById('connectCode').value = '';
+                
             } catch (e) {
-                showNotification('Ошибка', 'Неверный формат кода приглашения', 'error', 3000);
+                showNotification('Ошибка', 'Неверный формат кода', 'error', 3000);
             }
         }
 
-        // Инициализация соединения
-        async function initiateConnection(targetId) {
-            if (activeConnections.has(targetId)) {
-                showNotification('Уже подключены', 'Вы уже связаны с этим пользователем', 'warning', 3000);
+        // Добавление входящего запроса в панель (для получателя)
+        function addIncomingRequest(fromId, offerData) {
+            // Проверяем на дубликаты (не больше одного запроса от одного пользователя)
+            const existing = pendingRequests.find(r => r.from === fromId);
+            if (existing) {
+                showNotification('Повторный запрос', `${fromId.substr(0, 12)}... уже отправил запрос`, 'warning', 2000);
                 return;
             }
             
-            currentPeerId = targetId;
-            updateConnectionStatus('connecting', '🔄 Установка соединения...');
-            showNotification('Подключение', `Устанавливаем соединение с ${targetId.substr(0, 12)}...`, 'info', 2000);
+            const request = {
+                id: nextRequestId++,
+                from: fromId,
+                offer: offerData,
+                timestamp: new Date()
+            };
+            pendingRequests.push(request);
+            updateRequestsList();
             
-            if (peerConnection) peerConnection.close();
-            
-            peerConnection = new RTCPeerConnection(configuration);
-            dataChannel = peerConnection.createDataChannel('chat');
-            setupDataChannel(dataChannel);
-            
-            try {
-                const offer = await peerConnection.createOffer();
-                await peerConnection.setLocalDescription(offer);
-                await waitForIceGathering();
-                
-                const offerData = {
-                    type: 'offer',
-                    sdp: peerConnection.localDescription.sdp,
-                    from: myId,
-                    to: targetId
-                };
-                
-                // Сохраняем offer для ожидания ответа
-                pendingRequests.set(targetId, {
-                    offer: offerData,
-                    timestamp: Date.now()
-                });
-                
-                // Показываем offer пользователю для отправки
-                showOfferModal(offerData);
-                
-            } catch (error) {
-                console.error(error);
-                showNotification('Ошибка', 'Не удалось создать приглашение', 'error', 3000);
-                updateConnectionStatus('error', '❌ Ошибка');
-            }
+            showNotification('Новый запрос!', `${fromId.substr(0, 12)}... хочет с вами связаться`, 'info', 5000);
         }
 
-        // Показ offer в модалке
-        function showOfferModal(offerData) {
-            const offerText = JSON.stringify(offerData);
-            const modal = document.createElement('div');
-            modal.className = 'request-modal';
-            modal.innerHTML = `
-                <div class="request-modal-content">
-                    <div class="request-avatar">📨</div>
-                    <h3>Отправьте приглашение</h3>
-                    <p style="margin: 10px 0; color: #666; font-size: 14px;">Скопируйте этот код и отправьте собеседнику любым способом</p>
-                    <textarea readonly style="width:100%; height:120px; margin:10px 0; padding:8px; font-family:monospace; font-size:10px; border:1px solid #ddd; border-radius:8px;">${offerText}</textarea>
-                    <div class="flex-buttons">
-                        <button class="btn btn-primary" onclick="copyToClipboard('${offerText.replace(/'/g, "\\'")}'); this.closest('.request-modal').remove(); showNotification('Скопировано', 'Код приглашения скопирован', 'success', 2000);">📋 Копировать</button>
-                        <button class="btn btn-outline" onclick="this.closest('.request-modal').remove();">Закрыть</button>
-                    </div>
-                    <p style="margin-top: 10px; font-size: 12px; color: #999;">После получения ответа вставьте его ниже</p>
-                    <textarea id="answerInput" placeholder="Вставьте ответ собеседника" style="width:100%; margin-top:10px; padding:8px; border-radius:8px; border:1px solid #ddd;"></textarea>
-                    <button class="btn btn-success" style="margin-top:10px;" onclick="submitAnswer()">✅ Подтвердить</button>
-                </div>
-            `;
-            document.body.appendChild(modal);
-        }
-
-        // Отправка ответа
-        window.submitAnswer = function() {
-            const answerInput = document.getElementById('answerInput');
-            const answer = answerInput?.value.trim();
-            if (answer) {
-                handleAnswer(answer);
-                document.querySelector('.request-modal')?.remove();
-            } else {
-                showNotification('Ошибка', 'Вставьте ответ от собеседника', 'error', 2000);
-            }
-        };
-
-        // Получение offer (входящий запрос)
-        function receiveOffer(offerData) {
-            const fromId = offerData.from;
+        // Обновление списка запросов в панели
+        function updateRequestsList() {
+            const container = document.getElementById('requestsList');
+            const countSpan = document.getElementById('requestsCount');
+            countSpan.textContent = pendingRequests.length;
             
-            // Показываем модальное окно с запросом
-            const modal = document.createElement('div');
-            modal.className = 'request-modal';
-            modal.innerHTML = `
-                <div class="request-modal-content">
-                    <div class="request-avatar">👤</div>
-                    <h3>Входящий запрос</h3>
-                    <p style="margin: 10px 0; font-size: 14px;">Пользователь <strong>${fromId.substr(0, 16)}...</strong> хочет связаться с вами</p>
+            if (pendingRequests.length === 0) {
+                container.innerHTML = '<div class="no-requests">Нет входящих запросов</div>';
+                return;
+            }
+            
+            container.innerHTML = pendingRequests.map(req => `
+                <div class="request-card" id="request-${req.id}">
+                    <div class="request-user">👤 ${req.from.substr(0, 20)}...</div>
+                    <div class="request-time">${formatTime(req.timestamp)}</div>
                     <div class="request-buttons">
-                        <button class="btn-accept" onclick="acceptConnectionRequest('${fromId.replace(/'/g, "\\'")}')">✅ Принять</button>
-                        <button class="btn-reject" onclick="this.closest('.request-modal').remove(); showNotification('Отклонено', 'Вы отклонили запрос на подключение', 'info', 2000);">❌ Отклонить</button>
+                        <button class="accept-request" onclick="acceptRequest(${req.id})">✅ Принять</button>
+                        <button class="reject-request" onclick="rejectRequest(${req.id})">❌ Отклонить</button>
                     </div>
                 </div>
-            `;
-            document.body.appendChild(modal);
-            
-            showNotification('Новый запрос', `${fromId.substr(0, 12)}... хочет подключиться`, 'info', 5000);
-            
-            // Сохраняем offer для принятия
-            pendingRequests.set(fromId, { offer: offerData, type: 'incoming' });
+            `).join('');
         }
 
-        // Принятие запроса на подключение
-        window.acceptConnectionRequest = async function(fromId) {
-            const request = pendingRequests.get(fromId);
-            if (!request || !request.offer) {
-                showNotification('Ошибка', 'Запрос не найден', 'error', 3000);
-                return;
-            }
+        // Принять запрос
+        window.acceptRequest = async function(requestId) {
+            const request = pendingRequests.find(r => r.id === requestId);
+            if (!request) return;
             
-            document.querySelector('.request-modal')?.remove();
-            showNotification('Принято', `Вы приняли запрос от ${fromId.substr(0, 12)}...`, 'success', 2000);
+            // Удаляем запрос из списка
+            pendingRequests = pendingRequests.filter(r => r.id !== requestId);
+            updateRequestsList();
             
-            currentPeerId = fromId;
+            currentPeerId = request.from;
+            showNotification('Принято', `Подключаемся к ${currentPeerId.substr(0, 12)}...`, 'success', 2000);
             updateConnectionStatus('connecting', '🔄 Установка соединения...');
             
             if (peerConnection) peerConnection.close();
             
             peerConnection = new RTCPeerConnection(configuration);
+            
             peerConnection.ondatachannel = (event) => {
                 dataChannel = event.channel;
                 setupDataChannel(dataChannel);
             };
             
             try {
+                // Устанавливаем remote description из offer
                 await peerConnection.setRemoteDescription(new RTCSessionDescription(request.offer));
+                
+                // Создаем answer
                 const answer = await peerConnection.createAnswer();
                 await peerConnection.setLocalDescription(answer);
+                
                 await waitForIceGathering();
                 
+                // Отправляем answer обратно инициатору
+                // В демо версии мы используем prompt для передачи ответа
                 const answerData = {
                     type: 'answer',
                     sdp: peerConnection.localDescription.sdp,
                     from: myId,
-                    to: fromId
+                    to: currentPeerId
                 };
                 
-                // Показываем ответ для отправки
-                showAnswerModal(answerData);
+                const answerText = JSON.stringify(answerData);
+                
+                // Показываем ответ для отправки инициатору
+                showAnswerDialog(answerText);
                 
             } catch (error) {
                 console.error(error);
-                showNotification('Ошибка', 'Не удалось создать ответ', 'error', 3000);
+                showNotification('Ошибка', 'Не удалось создать соединение', 'error', 3000);
+                updateConnectionStatus('error', '❌ Ошибка');
             }
         };
 
-        // Показ ответа
-        function showAnswerModal(answerData) {
-            const answerText = JSON.stringify(answerData);
+        // Отклонить запрос
+        window.rejectRequest = function(requestId) {
+            const request = pendingRequests.find(r => r.id === requestId);
+            if (request) {
+                pendingRequests = pendingRequests.filter(r => r.id !== requestId);
+                updateRequestsList();
+                showNotification('Отклонено', `Вы отклонили запрос от ${request.from.substr(0, 12)}...`, 'info', 2000);
+            }
+        };
+
+        // Показать диалог с ответом для отправки
+        function showAnswerDialog(answerText) {
             const modal = document.createElement('div');
-            modal.className = 'request-modal';
+            modal.className = 'request-modal-fake';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.85);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 10001;
+            `;
             modal.innerHTML = `
-                <div class="request-modal-content">
-                    <div class="request-avatar">📤</div>
-                    <h3>Отправьте ответ</h3>
-                    <p style="margin: 10px 0; color: #666;">Скопируйте этот код и отправьте собеседнику</p>
-                    <textarea readonly style="width:100%; height:120px; margin:10px 0; padding:8px; font-family:monospace; font-size:10px;">${answerText}</textarea>
-                    <button class="btn btn-primary" onclick="copyToClipboard('${answerText.replace(/'/g, "\\'")}'); this.closest('.request-modal').remove(); showNotification('Скопировано', 'Ответ скопирован', 'success', 2000);">📋 Копировать</button>
-                    <button class="btn btn-outline" onclick="this.closest('.request-modal').remove();">Закрыть</button>
+                <div style="background: white; border-radius: 28px; padding: 24px; max-width: 90%; width: 340px; text-align: center;">
+                    <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 28px;">🔐</div>
+                    <h3>Соединение готово!</h3>
+                    <p style="margin: 12px 0; font-size: 13px;">Скопируйте этот код и отправьте собеседнику:</p>
+                    <textarea readonly style="width:100%; height:100px; margin:10px 0; padding:8px; font-family:monospace; font-size:10px; border:1px solid #ddd; border-radius:12px;">${answerText}</textarea>
+                    <button class="btn btn-primary" onclick="copyAndClose('${answerText.replace(/'/g, "\\'")}', this)">📋 Копировать и закрыть</button>
+                    <button class="btn btn-outline" style="margin-top: 8px;" onclick="this.closest('.request-modal-fake').remove()">Закрыть</button>
+                    <p style="margin-top: 12px; font-size: 11px; color: #999;">После отправки кода, ждите пока друг его вставит</p>
                 </div>
             `;
             document.body.appendChild(modal);
         }
 
-        // Обработка ответа
+        function copyAndClose(text, btn) {
+            navigator.clipboard.writeText(text);
+            showNotification('Скопировано', 'Код скопирован, отправьте другу', 'success', 2000);
+            const modal = btn.closest('.request-modal-fake');
+            if (modal) modal.remove();
+            
+            // Показываем кнопку для вставки ответа
+            showAnswerInput();
+        }
+
+        function showAnswerInput() {
+            const container = document.querySelector('.qr-section:last-child');
+            const existing = document.getElementById('answerInputBtn');
+            if (existing) return;
+            
+            const answerDiv = document.createElement('div');
+            answerDiv.id = 'answerInputBtn';
+            answerDiv.style.marginTop = '10px';
+            answerDiv.innerHTML = `
+                <button class="btn btn-success" onclick="openAnswerDialog()">📨 Вставить ответ от друга</button>
+            `;
+            container.appendChild(answerDiv);
+        }
+
+        window.openAnswerDialog = function() {
+            const answer = prompt('Вставьте код-ответ от собеседника:');
+            if (answer) {
+                handleAnswer(answer);
+            }
+        };
+
+        // Обработка ответа (для инициатора)
         async function handleAnswer(answerText) {
             try {
                 const answerData = JSON.parse(answerText);
@@ -937,15 +846,16 @@
                     await peerConnection.setRemoteDescription(new RTCSessionDescription(answerData));
                     updateConnectionStatus('connected', '✅ Подключено!');
                     document.getElementById('sendBtn').disabled = false;
-                    showNotification('Успешно', 'Соединение установлено!', 'success', 3000);
+                    showNotification('Успешно!', 'Соединение установлено!', 'success', 3000);
                     
-                    activeConnections.set(currentPeerId, peerConnection);
+                    activeConnections.set(currentPeerId, { pc: peerConnection, dc: dataChannel });
                     
                     if (!chats[currentPeerId]) {
                         chats[currentPeerId] = { name: currentPeerId, messages: [], lastSeen: new Date() };
                         saveChats();
                     }
                     updateChatsList();
+                    selectChat(currentPeerId);
                 }
             } catch (error) {
                 console.error(error);
@@ -966,23 +876,22 @@
         }
 
         function setupDataChannel(channel) {
+            dataChannel = channel;
             channel.onopen = () => {
                 updateConnectionStatus('connected', '✅ Подключено!');
                 document.getElementById('sendBtn').disabled = false;
-                showNotification('Соединение установлено', 'Теперь вы можете общаться', 'success', 3000);
-                activeConnections.set(currentPeerId, peerConnection);
+                showNotification('Соединение установлено', 'Можно общаться', 'success', 3000);
+                activeConnections.set(currentPeerId, { pc: peerConnection, dc: dataChannel });
             };
-            
             channel.onclose = () => {
                 updateConnectionStatus('disconnected', '❌ Разорвано');
                 document.getElementById('sendBtn').disabled = true;
+                showNotification('Разрыв', 'Соединение потеряно', 'warning', 3000);
                 activeConnections.delete(currentPeerId);
-                showNotification('Разрыв соединения', 'Связь с собеседником потеряна', 'warning', 3000);
             };
-            
             channel.onmessage = (event) => {
                 receiveMessage(event.data);
-                showNotification('Новое сообщение', `От ${currentPeerId?.substr(0, 12)}...`, 'info', 2000);
+                showNotification('Новое сообщение', `От ${currentPeerId?.substr(0, 12)}`, 'info', 2000);
             };
         }
 
@@ -990,12 +899,10 @@
             const input = document.getElementById('messageInput');
             const message = input.value.trim();
             if (!message) return;
-            
             if (!dataChannel || dataChannel.readyState !== 'open') {
-                showNotification('Ошибка', 'Соединение не установлено', 'error', 3000);
+                showNotification('Ошибка', 'Соединение не установлено', 'error', 2000);
                 return;
             }
-            
             dataChannel.send(message);
             saveMessage(currentPeerId, message, true);
             input.value = '';
@@ -1004,24 +911,12 @@
         function receiveMessage(message) {
             if (currentPeerId) {
                 saveMessage(currentPeerId, message, false);
-                if (currentChat === currentPeerId) {
-                    displayMessages(currentPeerId);
-                }
+                if (currentChat === currentPeerId) displayMessages(currentPeerId);
             }
         }
 
         function updateConnectionStatus(status, text) {
-            const statusDiv = document.getElementById('connectionStatus');
-            statusDiv.textContent = text;
-        }
-
-        function copyUserId() {
-            navigator.clipboard.writeText(myId);
-            showNotification('Скопировано', 'Ваш ID скопирован в буфер', 'success', 2000);
-        }
-
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text);
+            document.getElementById('connectionStatus').textContent = text;
         }
 
         function escapeHtml(text) {
@@ -1030,16 +925,12 @@
             return div.innerHTML;
         }
 
-        // Обработка входящих сообщений (глобальный обработчик)
-        window.addEventListener('message', (event) => {
-            // Для демо: можно обрабатывать postMessage если нужно
-        });
-
-        // Инициализация
+        // ========== ИНИЦИАЛИЗАЦИЯ ==========
         document.getElementById('userId').textContent = myId;
         document.getElementById('avatar').textContent = myId.charAt(0);
-        generateConnectionCode();
+        updateQR();
         updateChatsList();
+        updateRequestsList();
         
         document.getElementById('messageInput').onkeypress = (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
@@ -1048,25 +939,7 @@
             }
         };
         
-        // Обработка вставки offer
-        window.pasteOffer = function() {
-            const offer = prompt('Вставьте приглашение от друга:');
-            if (offer) {
-                try {
-                    const offerData = JSON.parse(offer);
-                    if (offerData.type === 'offer') {
-                        receiveOffer(offerData);
-                    } else {
-                        showNotification('Ошибка', 'Неверный формат приглашения', 'error', 3000);
-                    }
-                } catch(e) {
-                    showNotification('Ошибка', 'Неверный формат данных', 'error', 3000);
-                }
-            }
-        };
-        
         showNotification('Готов к работе', 'Ваш ID: ' + myId.substr(0, 12) + '...', 'success', 4000);
-        console.log('✅ P2P Messenger готов! Ваш ID:', myId);
     </script>
 </body>
 </html>
