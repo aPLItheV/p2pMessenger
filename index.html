@@ -21,13 +21,160 @@
             padding: 12px;
         }
 
-        /* Основной контейнер */
         .app {
             max-width: 1400px;
             margin: 0 auto;
+            position: relative;
         }
 
-        /* Хедер */
+        /* Уведомления */
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 380px;
+            width: calc(100% - 40px);
+            pointer-events: none;
+        }
+
+        .notification {
+            background: white;
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s ease;
+            pointer-events: auto;
+            border-left: 4px solid;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        .notification.success {
+            border-left-color: #10b981;
+        }
+        .notification.error {
+            border-left-color: #ef4444;
+        }
+        .notification.info {
+            border-left-color: #3b82f6;
+        }
+        .notification.warning {
+            border-left-color: #f59e0b;
+        }
+
+        .notification-icon {
+            font-size: 24px;
+        }
+        .notification-content {
+            flex: 1;
+        }
+        .notification-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .notification-message {
+            font-size: 13px;
+            color: #666;
+        }
+        .notification-close {
+            cursor: pointer;
+            font-size: 20px;
+            color: #999;
+            padding: 0 4px;
+        }
+        .notification-close:hover {
+            color: #333;
+        }
+
+        /* Модальное окно запроса */
+        .request-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10001;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .request-modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            max-width: 90%;
+            width: 360px;
+            text-align: center;
+        }
+
+        .request-avatar {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 32px;
+            color: white;
+        }
+
+        .request-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .request-buttons button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-accept {
+            background: #10b981;
+            color: white;
+        }
+        .btn-reject {
+            background: #ef4444;
+            color: white;
+        }
+
+        /* Остальные стили */
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 24px;
@@ -48,14 +195,12 @@
             font-size: 0.9rem;
         }
 
-        /* Сетка для десктопа */
         .grid {
             display: flex;
             gap: 20px;
             flex-wrap: wrap;
         }
 
-        /* Левая панель */
         .sidebar {
             flex: 1;
             min-width: 320px;
@@ -66,7 +211,6 @@
             height: fit-content;
         }
 
-        /* Правая панель - чат */
         .chat-panel {
             flex: 2;
             min-width: 320px;
@@ -79,7 +223,6 @@
             height: calc(100vh - 140px);
         }
 
-        /* Профиль пользователя */
         .profile-card {
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             border-radius: 16px;
@@ -113,7 +256,6 @@
             border: 1px solid #e0e0e0;
         }
 
-        /* Кнопки */
         .btn {
             padding: 12px 20px;
             border: none;
@@ -146,7 +288,6 @@
             color: #667eea;
         }
 
-        /* QR код */
         .qr-section {
             background: #f8f9fa;
             border-radius: 16px;
@@ -168,12 +309,32 @@
             justify-content: center;
         }
 
-        canvas {
+        canvas, #qrcode img {
             width: 200px;
             height: 200px;
         }
 
-        /* Список чатов */
+        .text-code {
+            font-family: monospace;
+            font-size: 10px;
+            word-break: break-all;
+            background: #f0f0f0;
+            padding: 8px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+
+        .flex-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .flex-buttons .btn {
+            flex: 1;
+            margin-top: 0;
+        }
+
         .chats-list {
             margin-top: 20px;
             border-top: 1px solid #e0e0e0;
@@ -197,21 +358,6 @@
             color: white;
         }
 
-        .chat-item:hover {
-            transform: translateX(5px);
-        }
-
-        .chat-name {
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .chat-time {
-            font-size: 10px;
-            opacity: 0.7;
-        }
-
-        /* Чат область */
         .chat-header {
             padding: 20px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -242,11 +388,6 @@
             animation: fadeIn 0.3s ease;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
         .message.sent {
             align-self: flex-end;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -260,12 +401,6 @@
             color: #333;
             border-bottom-left-radius: 4px;
             box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        }
-
-        .message-info {
-            font-size: 10px;
-            margin-bottom: 4px;
-            opacity: 0.7;
         }
 
         .input-area {
@@ -285,11 +420,6 @@
             font-family: inherit;
             font-size: 14px;
             outline: none;
-            transition: border-color 0.2s;
-        }
-
-        #messageInput:focus {
-            border-color: #667eea;
         }
 
         #sendBtn {
@@ -307,111 +437,32 @@
             cursor: not-allowed;
         }
 
-        /* Модальное окно */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            animation: fadeIn 0.2s ease;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 24px;
-            padding: 24px;
-            max-width: 90%;
-            width: 400px;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        /* Адаптив для телефонов */
         @media (max-width: 768px) {
-            body {
-                padding: 8px;
-            }
-            
-            .grid {
-                flex-direction: column;
-            }
-            
-            .sidebar {
-                min-width: auto;
-                order: 2;
-            }
-            
-            .chat-panel {
-                min-width: auto;
-                height: 60vh;
-                order: 1;
-            }
-            
-            .header h1 {
-                font-size: 1.4rem;
-            }
-            
-            .message {
-                max-width: 90%;
-            }
-            
-            .btn {
-                padding: 10px 16px;
-            }
+            body { padding: 8px; }
+            .grid { flex-direction: column; }
+            .sidebar { min-width: auto; order: 2; }
+            .chat-panel { min-width: auto; height: 60vh; order: 1; }
+            .message { max-width: 90%; }
+            .notification-container { top: 10px; right: 10px; max-width: calc(100% - 20px); }
         }
 
-        /* Скроллбар */
-        .messages::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .messages::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-
-        .messages::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 3px;
-        }
-
-        .text-code {
-            font-family: monospace;
-            font-size: 10px;
-            word-break: break-all;
-            background: #f0f0f0;
-            padding: 8px;
-            border-radius: 8px;
-            margin: 8px 0;
-        }
-
-        .flex-buttons {
-            display: flex;
-            gap: 8px;
-            margin-top: 8px;
-        }
-
-        .flex-buttons .btn {
-            flex: 1;
-            margin-top: 0;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
     <div class="app">
+        <div class="notification-container" id="notificationContainer"></div>
+        
         <div class="header">
             <h1>🔗 P2P Messenger</h1>
-            <p>Прямое соединение • QR код • Сохранение чатов</p>
+            <p>QR код • Мгновенное подключение</p>
         </div>
         
         <div class="grid">
-            <!-- Левая панель -->
             <div class="sidebar">
                 <div class="profile-card">
                     <div class="avatar" id="avatar">👤</div>
@@ -424,7 +475,7 @@
                 </div>
 
                 <div class="qr-section">
-                    <h3>📱 Подключиться через QR</h3>
+                    <h3>📱 Ваш QR код</h3>
                     <div class="qr-container" id="qrcode"></div>
                     <div class="text-code" id="textCode"></div>
                     <div class="flex-buttons">
@@ -435,8 +486,8 @@
 
                 <div class="qr-section">
                     <h3>🔌 Подключиться к другу</h3>
-                    <textarea id="connectCode" rows="3" placeholder="Вставьте код приглашения от друга" style="width:100%; padding:10px; border-radius:12px; border:1px solid #e0e0e0; margin:10px 0;"></textarea>
-                    <button class="btn btn-primary" onclick="connectToPeer()">🔗 Подключиться</button>
+                    <textarea id="connectCode" rows="2" placeholder="Вставьте код приглашения друга" style="width:100%; padding:10px; border-radius:12px; border:1px solid #e0e0e0; margin:10px 0;"></textarea>
+                    <button class="btn btn-primary" onclick="sendConnectionRequest()">📨 Отправить запрос</button>
                 </div>
 
                 <div class="chats-list">
@@ -445,7 +496,6 @@
                 </div>
             </div>
             
-            <!-- Правая панель - чат -->
             <div class="chat-panel">
                 <div class="chat-header">
                     <h3 id="chatTitle">Выберите чат</h3>
@@ -461,14 +511,12 @@
     </div>
 
     <script>
-        // Конфигурация STUN серверов
+        // Конфигурация
         const configuration = {
             iceServers: [
                 { urls: 'stun:stun.l.google.com:19302' },
                 { urls: 'stun:stun1.l.google.com:19302' },
-                { urls: 'stun:stun2.l.google.com:19302' },
-                { urls: 'stun:stun3.l.google.com:19302' },
-                { urls: 'stun:stun4.l.google.com:19302' }
+                { urls: 'stun:stun2.l.google.com:19302' }
             ]
         };
 
@@ -477,14 +525,44 @@
         let dataChannel = null;
         let currentPeerId = null;
         let myId = generateUserId();
-        let currentAnswer = null;
-        let pendingOffers = new Map();
+        let pendingRequests = new Map(); // Храним ожидающие запросы
+        let activeConnections = new Map(); // Активные соединения
         
-        // Хранилище чатов (localStorage)
+        // Хранилище чатов
         let chats = loadChats();
         let currentChat = null;
 
-        // Генерация уникального ID
+        // Уведомления
+        function showNotification(title, message, type = 'info', duration = 4000) {
+            const container = document.getElementById('notificationContainer');
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            
+            const icons = {
+                success: '✅',
+                error: '❌',
+                info: 'ℹ️',
+                warning: '⚠️'
+            };
+            
+            notification.innerHTML = `
+                <div class="notification-icon">${icons[type] || 'ℹ️'}</div>
+                <div class="notification-content">
+                    <div class="notification-title">${title}</div>
+                    <div class="notification-message">${message}</div>
+                </div>
+                <div class="notification-close" onclick="this.parentElement.remove()">✕</div>
+            `;
+            
+            container.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, duration);
+        }
+
+        // Генерация ID
         function generateUserId() {
             let saved = localStorage.getItem('myUserId');
             if (saved) return saved;
@@ -495,12 +573,11 @@
             return newId;
         }
 
-        // Загрузка чатов из localStorage
+        // Загрузка чатов
         function loadChats() {
             const saved = localStorage.getItem('p2pChats');
             if (saved) {
                 const chats = JSON.parse(saved);
-                // Конвертируем даты обратно
                 for (let id in chats) {
                     if (chats[id].messages) {
                         chats[id].messages = chats[id].messages.map(m => ({
@@ -580,9 +657,13 @@
             displayMessages(peerId);
             updateChatsList();
             
-            // Пытаемся восстановить соединение если есть
-            if (chats[peerId] && chats[peerId].connectionData) {
-                restoreConnection(peerId);
+            // Проверяем активное соединение
+            if (activeConnections.has(peerId)) {
+                updateConnectionStatus('connected', '✅ Подключено');
+                document.getElementById('sendBtn').disabled = false;
+            } else {
+                updateConnectionStatus('disconnected', '❌ Не подключен');
+                document.getElementById('sendBtn').disabled = true;
             }
         }
 
@@ -601,7 +682,6 @@
             container.scrollTop = container.scrollHeight;
         }
 
-        // Форматирование времени
         function formatTime(date) {
             const d = new Date(date);
             const now = new Date();
@@ -611,20 +691,18 @@
             return d.toLocaleDateString();
         }
 
-        // Генерация QR кода и текстового кода
+        // Генерация QR кода
         function generateConnectionCode() {
             const connectionData = {
                 type: 'connection_request',
                 from: myId,
-                timestamp: Date.now(),
-                offer: null
+                timestamp: Date.now()
             };
             
             const code = JSON.stringify(connectionData);
             const textCodeElem = document.getElementById('textCode');
             textCodeElem.textContent = code;
             
-            // Генерация QR
             const qrcodeDiv = document.getElementById('qrcode');
             qrcodeDiv.innerHTML = '';
             new QRCode(qrcodeDiv, {
@@ -639,19 +717,17 @@
             return code;
         }
 
-        // Обновить QR
         function refreshQR() {
             generateConnectionCode();
+            showNotification('QR обновлен', 'Новый QR код сгенерирован', 'success', 2000);
         }
 
-        // Копировать текстовый код
         function copyTextCode() {
             const code = document.getElementById('textCode').textContent;
             navigator.clipboard.writeText(code);
-            alert('✅ Код скопирован!');
+            showNotification('Скопировано', 'Код скопирован в буфер обмена', 'success', 2000);
         }
 
-        // Поделиться кодом
         function shareCode() {
             const code = document.getElementById('textCode').textContent;
             if (navigator.share) {
@@ -664,29 +740,37 @@
             }
         }
 
-        // Подключиться к собеседнику по коду
-        async function connectToPeer() {
+        // Отправка запроса на подключение
+        async function sendConnectionRequest() {
             const code = document.getElementById('connectCode').value.trim();
             if (!code) {
-                alert('Введите код приглашения');
+                showNotification('Ошибка', 'Введите код приглашения', 'error', 3000);
                 return;
             }
             
             try {
                 const data = JSON.parse(code);
                 if (data.type === 'connection_request') {
-                    // Создаем offer для подключения
-                    await createOfferForPeer(data.from);
+                    showNotification('Запрос отправлен', `Отправляем запрос пользователю ${data.from.substr(0, 12)}...`, 'info', 2000);
+                    await initiateConnection(data.from);
+                } else {
+                    throw new Error('Неверный формат');
                 }
             } catch (e) {
-                alert('Неверный формат кода');
+                showNotification('Ошибка', 'Неверный формат кода приглашения', 'error', 3000);
             }
         }
 
-        // Создать offer для подключения
-        async function createOfferForPeer(targetId) {
+        // Инициализация соединения
+        async function initiateConnection(targetId) {
+            if (activeConnections.has(targetId)) {
+                showNotification('Уже подключены', 'Вы уже связаны с этим пользователем', 'warning', 3000);
+                return;
+            }
+            
             currentPeerId = targetId;
             updateConnectionStatus('connecting', '🔄 Установка соединения...');
+            showNotification('Подключение', `Устанавливаем соединение с ${targetId.substr(0, 12)}...`, 'info', 2000);
             
             if (peerConnection) peerConnection.close();
             
@@ -703,45 +787,110 @@
                     type: 'offer',
                     sdp: peerConnection.localDescription.sdp,
                     from: myId,
-                    to: currentPeerId
+                    to: targetId
                 };
                 
-                const offerText = JSON.stringify(offerData);
+                // Сохраняем offer для ожидания ответа
+                pendingRequests.set(targetId, {
+                    offer: offerData,
+                    timestamp: Date.now()
+                });
                 
-                // Сохраняем offer
-                if (!chats[currentPeerId]) {
-                    chats[currentPeerId] = { name: currentPeerId, messages: [], lastSeen: new Date() };
-                }
-                chats[currentPeerId].connectionData = offerData;
-                saveChats();
-                
-                showModal('📨 Отправьте это приглашение', offerText);
-                updateConnectionStatus('waiting', '⏳ Ожидание ответа...');
+                // Показываем offer пользователю для отправки
+                showOfferModal(offerData);
                 
             } catch (error) {
                 console.error(error);
+                showNotification('Ошибка', 'Не удалось создать приглашение', 'error', 3000);
                 updateConnectionStatus('error', '❌ Ошибка');
             }
         }
 
-        // Принять приглашение
-        async function acceptOffer(offerText) {
+        // Показ offer в модалке
+        function showOfferModal(offerData) {
+            const offerText = JSON.stringify(offerData);
+            const modal = document.createElement('div');
+            modal.className = 'request-modal';
+            modal.innerHTML = `
+                <div class="request-modal-content">
+                    <div class="request-avatar">📨</div>
+                    <h3>Отправьте приглашение</h3>
+                    <p style="margin: 10px 0; color: #666; font-size: 14px;">Скопируйте этот код и отправьте собеседнику любым способом</p>
+                    <textarea readonly style="width:100%; height:120px; margin:10px 0; padding:8px; font-family:monospace; font-size:10px; border:1px solid #ddd; border-radius:8px;">${offerText}</textarea>
+                    <div class="flex-buttons">
+                        <button class="btn btn-primary" onclick="copyToClipboard('${offerText.replace(/'/g, "\\'")}'); this.closest('.request-modal').remove(); showNotification('Скопировано', 'Код приглашения скопирован', 'success', 2000);">📋 Копировать</button>
+                        <button class="btn btn-outline" onclick="this.closest('.request-modal').remove();">Закрыть</button>
+                    </div>
+                    <p style="margin-top: 10px; font-size: 12px; color: #999;">После получения ответа вставьте его ниже</p>
+                    <textarea id="answerInput" placeholder="Вставьте ответ собеседника" style="width:100%; margin-top:10px; padding:8px; border-radius:8px; border:1px solid #ddd;"></textarea>
+                    <button class="btn btn-success" style="margin-top:10px;" onclick="submitAnswer()">✅ Подтвердить</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // Отправка ответа
+        window.submitAnswer = function() {
+            const answerInput = document.getElementById('answerInput');
+            const answer = answerInput?.value.trim();
+            if (answer) {
+                handleAnswer(answer);
+                document.querySelector('.request-modal')?.remove();
+            } else {
+                showNotification('Ошибка', 'Вставьте ответ от собеседника', 'error', 2000);
+            }
+        };
+
+        // Получение offer (входящий запрос)
+        function receiveOffer(offerData) {
+            const fromId = offerData.from;
+            
+            // Показываем модальное окно с запросом
+            const modal = document.createElement('div');
+            modal.className = 'request-modal';
+            modal.innerHTML = `
+                <div class="request-modal-content">
+                    <div class="request-avatar">👤</div>
+                    <h3>Входящий запрос</h3>
+                    <p style="margin: 10px 0; font-size: 14px;">Пользователь <strong>${fromId.substr(0, 16)}...</strong> хочет связаться с вами</p>
+                    <div class="request-buttons">
+                        <button class="btn-accept" onclick="acceptConnectionRequest('${fromId.replace(/'/g, "\\'")}')">✅ Принять</button>
+                        <button class="btn-reject" onclick="this.closest('.request-modal').remove(); showNotification('Отклонено', 'Вы отклонили запрос на подключение', 'info', 2000);">❌ Отклонить</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            showNotification('Новый запрос', `${fromId.substr(0, 12)}... хочет подключиться`, 'info', 5000);
+            
+            // Сохраняем offer для принятия
+            pendingRequests.set(fromId, { offer: offerData, type: 'incoming' });
+        }
+
+        // Принятие запроса на подключение
+        window.acceptConnectionRequest = async function(fromId) {
+            const request = pendingRequests.get(fromId);
+            if (!request || !request.offer) {
+                showNotification('Ошибка', 'Запрос не найден', 'error', 3000);
+                return;
+            }
+            
+            document.querySelector('.request-modal')?.remove();
+            showNotification('Принято', `Вы приняли запрос от ${fromId.substr(0, 12)}...`, 'success', 2000);
+            
+            currentPeerId = fromId;
+            updateConnectionStatus('connecting', '🔄 Установка соединения...');
+            
+            if (peerConnection) peerConnection.close();
+            
+            peerConnection = new RTCPeerConnection(configuration);
+            peerConnection.ondatachannel = (event) => {
+                dataChannel = event.channel;
+                setupDataChannel(dataChannel);
+            };
+            
             try {
-                const offerData = JSON.parse(offerText);
-                if (offerData.type !== 'offer') throw new Error('Неверный формат');
-                
-                currentPeerId = offerData.from;
-                updateConnectionStatus('connecting', '🔄 Принятие приглашения...');
-                
-                if (peerConnection) peerConnection.close();
-                
-                peerConnection = new RTCPeerConnection(configuration);
-                peerConnection.ondatachannel = (event) => {
-                    dataChannel = event.channel;
-                    setupDataChannel(dataChannel);
-                };
-                
-                await peerConnection.setRemoteDescription(new RTCSessionDescription(offerData));
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(request.offer));
                 const answer = await peerConnection.createAnswer();
                 await peerConnection.setLocalDescription(answer);
                 await waitForIceGathering();
@@ -750,18 +899,34 @@
                     type: 'answer',
                     sdp: peerConnection.localDescription.sdp,
                     from: myId,
-                    to: currentPeerId
+                    to: fromId
                 };
                 
-                currentAnswer = JSON.stringify(answerData);
-                showModal('📤 Отправьте этот ответ', currentAnswer);
-                updateConnectionStatus('waiting', '⏳ Ожидание подтверждения...');
+                // Показываем ответ для отправки
+                showAnswerModal(answerData);
                 
             } catch (error) {
                 console.error(error);
-                alert('Ошибка при принятии приглашения');
-                updateConnectionStatus('error', '❌ Ошибка');
+                showNotification('Ошибка', 'Не удалось создать ответ', 'error', 3000);
             }
+        };
+
+        // Показ ответа
+        function showAnswerModal(answerData) {
+            const answerText = JSON.stringify(answerData);
+            const modal = document.createElement('div');
+            modal.className = 'request-modal';
+            modal.innerHTML = `
+                <div class="request-modal-content">
+                    <div class="request-avatar">📤</div>
+                    <h3>Отправьте ответ</h3>
+                    <p style="margin: 10px 0; color: #666;">Скопируйте этот код и отправьте собеседнику</p>
+                    <textarea readonly style="width:100%; height:120px; margin:10px 0; padding:8px; font-family:monospace; font-size:10px;">${answerText}</textarea>
+                    <button class="btn btn-primary" onclick="copyToClipboard('${answerText.replace(/'/g, "\\'")}'); this.closest('.request-modal').remove(); showNotification('Скопировано', 'Ответ скопирован', 'success', 2000);">📋 Копировать</button>
+                    <button class="btn btn-outline" onclick="this.closest('.request-modal').remove();">Закрыть</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
         }
 
         // Обработка ответа
@@ -772,21 +937,22 @@
                     await peerConnection.setRemoteDescription(new RTCSessionDescription(answerData));
                     updateConnectionStatus('connected', '✅ Подключено!');
                     document.getElementById('sendBtn').disabled = false;
-                    addSystemMessage('🔗 Соединение установлено!');
+                    showNotification('Успешно', 'Соединение установлено!', 'success', 3000);
                     
-                    // Сохраняем успешное соединение
-                    if (chats[currentPeerId]) {
-                        chats[currentPeerId].connected = true;
+                    activeConnections.set(currentPeerId, peerConnection);
+                    
+                    if (!chats[currentPeerId]) {
+                        chats[currentPeerId] = { name: currentPeerId, messages: [], lastSeen: new Date() };
                         saveChats();
                     }
+                    updateChatsList();
                 }
             } catch (error) {
                 console.error(error);
-                alert('Ошибка при обработке ответа');
+                showNotification('Ошибка', 'Неверный формат ответа', 'error', 3000);
             }
         }
 
-        // Ожидание ICE кандидатов
         function waitForIceGathering() {
             return new Promise((resolve) => {
                 if (peerConnection.iceGatheringState === 'complete') {
@@ -799,32 +965,34 @@
             });
         }
 
-        // Настройка DataChannel
         function setupDataChannel(channel) {
             channel.onopen = () => {
                 updateConnectionStatus('connected', '✅ Подключено!');
                 document.getElementById('sendBtn').disabled = false;
-                addSystemMessage('🔗 Соединение установлено!');
+                showNotification('Соединение установлено', 'Теперь вы можете общаться', 'success', 3000);
+                activeConnections.set(currentPeerId, peerConnection);
             };
             
             channel.onclose = () => {
                 updateConnectionStatus('disconnected', '❌ Разорвано');
                 document.getElementById('sendBtn').disabled = true;
+                activeConnections.delete(currentPeerId);
+                showNotification('Разрыв соединения', 'Связь с собеседником потеряна', 'warning', 3000);
             };
             
             channel.onmessage = (event) => {
                 receiveMessage(event.data);
+                showNotification('Новое сообщение', `От ${currentPeerId?.substr(0, 12)}...`, 'info', 2000);
             };
         }
 
-        // Отправка сообщения
         function sendMessage() {
             const input = document.getElementById('messageInput');
             const message = input.value.trim();
             if (!message) return;
             
             if (!dataChannel || dataChannel.readyState !== 'open') {
-                alert('Соединение не установлено');
+                showNotification('Ошибка', 'Соединение не установлено', 'error', 3000);
                 return;
             }
             
@@ -833,7 +1001,6 @@
             input.value = '';
         }
 
-        // Получение сообщения
         function receiveMessage(message) {
             if (currentPeerId) {
                 saveMessage(currentPeerId, message, false);
@@ -843,79 +1010,30 @@
             }
         }
 
-        // Добавление системного сообщения
-        function addSystemMessage(message) {
-            const container = document.getElementById('messages');
-            const msgElement = document.createElement('div');
-            msgElement.style.cssText = 'text-align: center; color: #666; font-size: 11px; padding: 5px;';
-            msgElement.textContent = message;
-            container.appendChild(msgElement);
-            container.scrollTop = container.scrollHeight;
-        }
-
-        // Обновление статуса подключения
         function updateConnectionStatus(status, text) {
             const statusDiv = document.getElementById('connectionStatus');
             statusDiv.textContent = text;
-            statusDiv.style.color = status === 'connected' ? '#10b981' : status === 'error' ? '#ef4444' : '#f59e0b';
         }
 
-        // Показать модальное окно
-        function showModal(title, text) {
-            const modal = document.createElement('div');
-            modal.className = 'modal';
-            modal.innerHTML = `
-                <div class="modal-content">
-                    <h3>${title}</h3>
-                    <textarea readonly style="width:100%; height:150px; margin:15px 0; padding:10px; font-family:monospace; font-size:11px; border:1px solid #ddd; border-radius:8px;">${text}</textarea>
-                    <div class="flex-buttons">
-                        <button class="btn btn-primary" onclick="copyToClipboard('${text.replace(/'/g, "\\'")}'); this.closest('.modal').remove();">📋 Копировать</button>
-                        <button class="btn btn-outline" onclick="this.closest('.modal').remove();">Закрыть</button>
-                    </div>
-                    <button class="btn btn-success" style="margin-top:10px;" onclick="if(window.pasteAnswer) window.pasteAnswerFromModal('${text.replace(/'/g, "\\'")}'); this.closest('.modal').remove();">📨 Я получил ответ</button>
-                </div>
-            `;
-            document.body.appendChild(modal);
+        function copyUserId() {
+            navigator.clipboard.writeText(myId);
+            showNotification('Скопировано', 'Ваш ID скопирован в буфер', 'success', 2000);
         }
 
-        // Копирование в буфер
-        window.copyToClipboard = function(text) {
+        function copyToClipboard(text) {
             navigator.clipboard.writeText(text);
-            alert('✅ Скопировано!');
-        };
-
-        // Вставка ответа из модалки
-        window.pasteAnswerFromModal = function(answerText) {
-            const answer = prompt('Вставьте ответ от собеседника:');
-            if (answer) handleAnswer(answer);
-        };
-
-        // Вставка ответа глобально
-        window.pasteAnswer = function() {
-            const answer = prompt('Вставьте ответ от собесебника:');
-            if (answer) handleAnswer(answer);
-        };
-
-        // Восстановление соединения
-        async function restoreConnection(peerId) {
-            const chat = chats[peerId];
-            if (chat && chat.connectionData) {
-                await createOfferForPeer(peerId);
-            }
         }
 
-        // Экранирование HTML
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         }
 
-        // Копировать свой ID
-        function copyUserId() {
-            navigator.clipboard.writeText(myId);
-            alert('✅ ID скопирован!');
-        }
+        // Обработка входящих сообщений (глобальный обработчик)
+        window.addEventListener('message', (event) => {
+            // Для демо: можно обрабатывать postMessage если нужно
+        });
 
         // Инициализация
         document.getElementById('userId').textContent = myId;
@@ -923,7 +1041,6 @@
         generateConnectionCode();
         updateChatsList();
         
-        // Enter для отправки
         document.getElementById('messageInput').onkeypress = (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -931,25 +1048,25 @@
             }
         };
         
-        // Обработка входящих приглашений через prompt
-        window.acceptOfferPrompt = function() {
+        // Обработка вставки offer
+        window.pasteOffer = function() {
             const offer = prompt('Вставьте приглашение от друга:');
-            if (offer) acceptOffer(offer);
+            if (offer) {
+                try {
+                    const offerData = JSON.parse(offer);
+                    if (offerData.type === 'offer') {
+                        receiveOffer(offerData);
+                    } else {
+                        showNotification('Ошибка', 'Неверный формат приглашения', 'error', 3000);
+                    }
+                } catch(e) {
+                    showNotification('Ошибка', 'Неверный формат данных', 'error', 3000);
+                }
+            }
         };
         
-        // Добавляем кнопку для принятия приглашения в интерфейс
-        const acceptBtn = document.createElement('button');
-        acceptBtn.textContent = '📨 Принять приглашение';
-        acceptBtn.className = 'btn btn-success';
-        acceptBtn.style.marginTop = '10px';
-        acceptBtn.onclick = () => {
-            const offer = prompt('Вставьте приглашение от друга:');
-            if (offer) acceptOffer(offer);
-        };
-        document.querySelector('.qr-section:last-child').appendChild(acceptBtn);
-        
-        console.log('✅ P2P Messenger готов!');
-        console.log('Ваш ID:', myId);
+        showNotification('Готов к работе', 'Ваш ID: ' + myId.substr(0, 12) + '...', 'success', 4000);
+        console.log('✅ P2P Messenger готов! Ваш ID:', myId);
     </script>
 </body>
 </html>
