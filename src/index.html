@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P2P Messenger</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="user-info">
+                <h3>Ваш ID:</h3>
+                <div class="user-id" id="userId"></div>
+                <button id="copyIdBtn" class="copy-btn">Копировать ID</button>
+            </div>
+            <div class="users-list">
+                <h3>Пользователи онлайн:</h3>
+                <div id="usersList" class="users"></div>
+            </div>
+        </div>
+        
+        <div class="chat-area">
+            <div class="chat-header">
+                <h3 id="chatWith">Выберите собеседника</h3>
+            </div>
+            <div class="messages" id="messages"></div>
+            <div class="input-area">
+                <textarea id="messageInput" placeholder="Введите сообщение..." rows="3"></textarea>
+                <button id="sendBtn" disabled>Отправить</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="signaling.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
