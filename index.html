@@ -25,7 +25,6 @@
             margin: 0 auto;
         }
 
-        /* Уведомления */
         .notification-container {
             position: fixed;
             top: 20px;
@@ -61,12 +60,6 @@
         .notification.error { border-left-color: #ef4444; }
         .notification.info { border-left-color: #3b82f6; }
         .notification.warning { border-left-color: #f59e0b; }
-
-        .notification-icon { font-size: 22px; }
-        .notification-content { flex: 1; }
-        .notification-title { font-weight: 600; font-size: 14px; margin-bottom: 2px; }
-        .notification-message { font-size: 12px; color: #666; }
-        .notification-close { cursor: pointer; font-size: 18px; color: #999; }
 
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -158,7 +151,6 @@
         }
         .btn-success { background: #10b981; color: white; }
         .btn-outline { background: white; border: 2px solid #667eea; color: #667eea; }
-        .btn-danger { background: #ef4444; color: white; }
 
         .qr-section {
             background: #f8f9fa;
@@ -170,39 +162,37 @@
 
         .qr-container {
             background: white;
-            padding: 15px;
+            padding: 10px;
             border-radius: 16px;
             display: inline-block;
             margin: 10px auto;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
-        /* Улучшенный QR код - больший размер и четкость */
-        #qrcode {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
         #qrcode canvas, #qrcode img {
-            width: 220px !important;
-            height: 220px !important;
-            image-rendering: crisp-edges;
-            image-rendering: pixelated;
+            width: 150px !important;
+            height: 150px !important;
         }
 
-        .text-code {
-            font-family: monospace;
-            font-size: 10px;
-            word-break: break-all;
-            background: white;
-            padding: 8px;
-            border-radius: 8px;
-            margin: 8px 0;
+        .connect-methods {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .connect-methods .btn {
+            flex: 1;
+            margin-top: 0;
+        }
+
+        .connect-input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
             border: 1px solid #e0e0e0;
+            font-size: 12px;
+            font-family: monospace;
+            margin: 10px 0;
         }
 
-        /* Панель запросов */
         .requests-panel {
             margin-top: 20px;
             border-top: 1px solid #e0e0e0;
@@ -254,15 +244,8 @@
             font-size: 13px;
         }
 
-        .accept-request {
-            background: #10b981;
-            color: white;
-        }
-
-        .reject-request {
-            background: #ef4444;
-            color: white;
-        }
+        .accept-request { background: #10b981; color: white; }
+        .reject-request { background: #ef4444; color: white; }
 
         .no-requests {
             text-align: center;
@@ -329,7 +312,6 @@
             border-bottom-left-radius: 4px;
             box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
-        .message-info { font-size: 10px; margin-bottom: 4px; opacity: 0.7; }
 
         .input-area {
             padding: 16px;
@@ -359,51 +341,6 @@
         }
         #sendBtn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* Кнопка увеличения QR */
-        .qr-zoom-btn {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            cursor: pointer;
-            margin-top: 8px;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        /* Модальное окно для увеличенного QR */
-        .qr-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.95);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 20000;
-            cursor: pointer;
-        }
-        .qr-modal-content {
-            text-align: center;
-            padding: 20px;
-        }
-        .qr-modal-content canvas, .qr-modal-content img {
-            width: 90vw !important;
-            height: 90vw !important;
-            max-width: 500px;
-            max-height: 500px;
-            background: white;
-            padding: 20px;
-            border-radius: 20px;
-        }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
         @media (max-width: 768px) {
             body { padding: 8px; }
             .grid { flex-direction: column; }
@@ -412,9 +349,14 @@
             .message { max-width: 90%; }
             .notification-container { top: 10px; right: 10px; max-width: calc(100% - 20px); }
             #qrcode canvas, #qrcode img {
-                width: 180px !important;
-                height: 180px !important;
+                width: 130px !important;
+                height: 130px !important;
             }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -425,7 +367,7 @@
         
         <div class="header">
             <h1>🔗 P2P Messenger</h1>
-            <p>Наведи камеру на QR код друга</p>
+            <p>QR код или ID для подключения</p>
         </div>
         
         <div class="grid">
@@ -439,20 +381,22 @@
 
                 <div class="qr-section">
                     <h3>📱 Ваш QR код</h3>
-                    <p style="font-size: 12px; color: #666; margin-bottom: 8px;">Друг сканирует для подключения</p>
+                    <p style="font-size: 12px; color: #666;">Сканируйте для подключения</p>
                     <div class="qr-container" id="qrcode"></div>
-                    <button class="qr-zoom-btn" onclick="zoomQR()">🔍 Нажми для увеличения</button>
-                    <div class="text-code" id="textCode"></div>
-                    <button class="btn btn-outline" onclick="copyTextCode()">📋 Копировать код (если не сканируется)</button>
+                    <button class="btn btn-outline" onclick="copyQRCode()">📋 Копировать QR код как текст</button>
                 </div>
 
                 <div class="qr-section">
                     <h3>🔌 Подключиться к другу</h3>
-                    <textarea id="connectCode" rows="2" placeholder="Вставьте код друга или отсканируйте QR" style="width:100%; padding:10px; border-radius:12px; border:1px solid #e0e0e0; margin:10px 0; font-size: 11px;"></textarea>
-                    <button class="btn btn-primary" onclick="sendConnectionRequest()">📨 Отправить запрос</button>
+                    <input type="text" id="friendId" class="connect-input" placeholder="Введите ID друга">
+                    <div class="connect-methods">
+                        <button class="btn btn-primary" onclick="connectById()">📨 Подключиться по ID</button>
+                    </div>
+                    <div style="margin-top: 10px; text-align: center; color: #999; font-size: 12px;">или</div>
+                    <textarea id="qrCodeInput" class="connect-input" rows="2" placeholder="Вставьте QR код (текст) друга"></textarea>
+                    <button class="btn btn-primary" onclick="connectByQRText()">📷 Подключиться по QR тексту</button>
                 </div>
 
-                <!-- Панель входящих запросов -->
                 <div class="requests-panel">
                     <div class="requests-title">
                         <span>📞 Входящие запросы</span>
@@ -487,9 +431,7 @@
             iceServers: [
                 { urls: 'stun:stun.l.google.com:19302' },
                 { urls: 'stun:stun1.l.google.com:19302' },
-                { urls: 'stun:stun2.l.google.com:19302' },
-                { urls: 'stun:stun3.l.google.com:19302' },
-                { urls: 'stun:stun4.l.google.com:19302' }
+                { urls: 'stun:stun2.l.google.com:19302' }
             ]
         };
 
@@ -498,7 +440,8 @@
         let dataChannel = null;
         let currentPeerId = null;
         let myId = generateUserId();
-        let pendingRequests = [];
+        let pendingRequests = []; // запросы к нам
+        let outgoingRequests = new Map(); // отправленные нами запросы (ожидаем ответ)
         let nextRequestId = 1;
         let activeConnections = new Map();
         let currentQRData = null;
@@ -506,7 +449,7 @@
         let chats = loadChats();
         let currentChat = null;
 
-        // ========== УВЕДОМЛЕНИЯ ==========
+        // Уведомления
         function showNotification(title, message, type = 'info', duration = 3500) {
             const container = document.getElementById('notificationContainer');
             const notification = document.createElement('div');
@@ -527,14 +470,13 @@
             }, duration);
         }
 
-        // ========== ХРАНЕНИЕ ==========
+        // Хранение
         function generateUserId() {
             let saved = localStorage.getItem('myUserId');
             if (saved) return saved;
-            // Делаем ID короче для QR
-            const random = Math.random().toString(36).substr(2, 8);
-            const timestamp = Date.now().toString(36).substr(-6);
-            const newId = `${random}${timestamp}`.toUpperCase();
+            const random = Math.random().toString(36).substr(2, 8).toUpperCase();
+            const timestamp = Date.now().toString(36).substr(-6).toUpperCase();
+            const newId = `${random}${timestamp}`;
             localStorage.setItem('myUserId', newId);
             return newId;
         }
@@ -631,14 +573,13 @@
             return d.toLocaleDateString();
         }
 
-        // ========== УЛУЧШЕННЫЙ QR КОД ==========
+        // QR код
         async function generateQRWithOffer() {
             const pc = new RTCPeerConnection(configuration);
             const dc = pc.createDataChannel('chat');
             
             return new Promise(async (resolve) => {
                 let offerData = null;
-                
                 pc.onicecandidate = (event) => {
                     if (event.candidate === null && offerData) {
                         resolve(offerData);
@@ -648,13 +589,11 @@
                 const offer = await pc.createOffer();
                 await pc.setLocalDescription(offer);
                 
-                // Уменьшаем время ожидания для более быстрого QR
                 setTimeout(() => {
                     if (pc.localDescription) {
                         offerData = {
-                            t: 'o', // сокращенный тип
-                            s: pc.localDescription.sdp,
-                            f: myId
+                            from: myId,
+                            sdp: pc.localDescription.sdp
                         };
                         resolve(offerData);
                     }
@@ -663,78 +602,26 @@
         }
 
         async function updateQR() {
-            showNotification('Генерация QR', 'Создаем приглашение...', 'info', 1000);
             const offerData = await generateQRWithOffer();
             currentQRData = offerData;
-            
-            // Кодируем в компактный JSON без пробелов
             const code = JSON.stringify(offerData);
             
-            document.getElementById('textCode').textContent = code;
             const qrcodeDiv = document.getElementById('qrcode');
             qrcodeDiv.innerHTML = '';
-            
-            // Создаем QR с максимальным качеством
-            try {
-                new QRCode(qrcodeDiv, {
-                    text: code,
-                    width: 260,
-                    height: 260,
-                    colorDark: "#000000",
-                    colorLight: "#ffffff",
-                    correctLevel: QRCode.CorrectLevel.M
-                });
-                
-                // Улучшаем четкость через CSS
-                setTimeout(() => {
-                    const canvas = qrcodeDiv.querySelector('canvas');
-                    if (canvas) {
-                        canvas.style.width = '220px';
-                        canvas.style.height = '220px';
-                        canvas.style.imageRendering = 'crisp-edges';
-                    }
-                }, 100);
-                
-                showNotification('Готово', 'QR код создан, друг может сканировать', 'success', 2000);
-            } catch(e) {
-                console.error(e);
-                showNotification('Ошибка', 'Не удалось создать QR', 'error', 2000);
-            }
+            new QRCode(qrcodeDiv, {
+                text: code,
+                width: 150,
+                height: 150,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.M
+            });
         }
 
-        function zoomQR() {
-            const qrcodeDiv = document.getElementById('qrcode');
-            const clone = qrcodeDiv.cloneNode(true);
-            
-            const modal = document.createElement('div');
-            modal.className = 'qr-modal';
-            modal.onclick = () => modal.remove();
-            modal.innerHTML = `
-                <div class="qr-modal-content" onclick="event.stopPropagation()">
-                    ${clone.outerHTML}
-                    <p style="color: white; margin-top: 20px; font-size: 14px;">Нажмите в любом месте для закрытия</p>
-                </div>
-            `;
-            
-            // Увеличиваем размер в модалке
-            setTimeout(() => {
-                const canvas = modal.querySelector('canvas');
-                if (canvas) {
-                    canvas.style.width = '80vw';
-                    canvas.style.height = '80vw';
-                    canvas.style.maxWidth = '400px';
-                    canvas.style.maxHeight = '400px';
-                }
-            }, 10);
-            
-            document.body.appendChild(modal);
-        }
-
-        function copyTextCode() {
-            const code = document.getElementById('textCode').textContent;
-            if (code) {
-                navigator.clipboard.writeText(code);
-                showNotification('Скопировано', 'Код скопирован, отправьте другу', 'success', 1500);
+        function copyQRCode() {
+            if (currentQRData) {
+                navigator.clipboard.writeText(JSON.stringify(currentQRData));
+                showNotification('Скопировано', 'QR код скопирован как текст', 'success', 1500);
             }
         }
 
@@ -743,38 +630,145 @@
             showNotification('Скопировано', 'Ваш ID скопирован', 'success', 1500);
         }
 
-        // ========== ОТПРАВКА ЗАПРОСА ==========
-        async function sendConnectionRequest() {
-            let code = document.getElementById('connectCode').value.trim();
-            if (!code) {
-                showNotification('Ошибка', 'Вставьте код приглашения или отсканируйте QR', 'error', 2000);
+        // ========== ОТПРАВКА ЗАПРОСА (правильная логика) ==========
+        
+        // Подключение по ID друга
+        async function connectById() {
+            const friendId = document.getElementById('friendId').value.trim();
+            if (!friendId) {
+                showNotification('Ошибка', 'Введите ID друга', 'error', 2000);
                 return;
             }
-            
+            if (friendId === myId) {
+                showNotification('Ошибка', 'Нельзя подключиться к самому себе', 'warning', 2000);
+                return;
+            }
+            await sendConnectionRequest(friendId);
+        }
+
+        // Подключение по QR тексту
+        async function connectByQRText() {
+            const qrText = document.getElementById('qrCodeInput').value.trim();
+            if (!qrText) {
+                showNotification('Ошибка', 'Вставьте QR код друга', 'error', 2000);
+                return;
+            }
             try {
-                let offerData = JSON.parse(code);
-                // Поддержка старого и нового формата
-                if (offerData.t === 'o') {
-                    offerData = { type: 'offer', sdp: offerData.s, from: offerData.f };
-                }
-                
-                if (offerData.type !== 'offer') throw new Error('Неверный формат');
-                if (offerData.from === myId) {
+                const data = JSON.parse(qrText);
+                const friendId = data.from;
+                if (friendId === myId) {
                     showNotification('Ошибка', 'Это ваш собственный QR код', 'warning', 2000);
                     return;
                 }
-                
-                showNotification('Запрос отправлен', `Отправляем запрос пользователю ${offerData.from.substr(0, 12)}...`, 'success', 2000);
-                
-                addIncomingRequest(offerData.from, offerData);
-                document.getElementById('connectCode').value = '';
-                
-            } catch (e) {
-                showNotification('Ошибка', 'Неверный формат кода. Попробуйте отсканировать QR заново', 'error', 3000);
+                await sendConnectionRequestWithOffer(friendId, data);
+            } catch(e) {
+                showNotification('Ошибка', 'Неверный формат QR кода', 'error', 2000);
             }
         }
 
-        function addIncomingRequest(fromId, offerData) {
+        // Отправка запроса на подключение (создаем offer)
+        async function sendConnectionRequest(targetId) {
+            showNotification('Создание запроса', `Создаем приглашение для ${targetId.substr(0, 12)}...`, 'info', 1500);
+            
+            if (peerConnection) peerConnection.close();
+            
+            peerConnection = new RTCPeerConnection(configuration);
+            dataChannel = peerConnection.createDataChannel('chat');
+            
+            // Временно сохраняем обработчик, но не настраиваем пока
+            let tempResolve = null;
+            let offerCreated = false;
+            
+            peerConnection.onicecandidate = async (event) => {
+                if (event.candidate === null && !offerCreated) {
+                    offerCreated = true;
+                    const offerData = {
+                        type: 'connection_request',
+                        from: myId,
+                        target: targetId,
+                        offer: {
+                            sdp: peerConnection.localDescription.sdp,
+                            type: 'offer'
+                        }
+                    };
+                    
+                    // Показываем offer для отправки
+                    showOfferToSend(offerData, targetId);
+                    if (tempResolve) tempResolve();
+                }
+            };
+            
+            try {
+                const offer = await peerConnection.createOffer();
+                await peerConnection.setLocalDescription(offer);
+            } catch (error) {
+                console.error(error);
+                showNotification('Ошибка', 'Не удалось создать запрос', 'error', 2000);
+            }
+        }
+
+        // Отправка запроса с готовым offer (из QR)
+        async function sendConnectionRequestWithOffer(targetId, offerData) {
+            showNotification('Отправка запроса', `Отправляем запрос ${targetId.substr(0, 12)}...`, 'info', 1500);
+            
+            // Создаем запрос к пользователю
+            const requestData = {
+                type: 'connection_request',
+                from: myId,
+                target: targetId,
+                offer: offerData
+            };
+            
+            // Показываем offer для отправки
+            showOfferToSend(requestData, targetId);
+        }
+
+        function showOfferToSend(requestData, targetId) {
+            const requestText = JSON.stringify(requestData);
+            
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.85);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 10001;
+            `;
+            modal.innerHTML = `
+                <div style="background: white; border-radius: 28px; padding: 24px; max-width: 90%; width: 340px; text-align: center;">
+                    <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 28px;">📨</div>
+                    <h3>Отправьте запрос другу</h3>
+                    <p style="margin: 12px 0; font-size: 13px;">Скопируйте этот код и отправьте другу (Telegram, WhatsApp и т.д.)</p>
+                    <textarea readonly style="width:100%; height:150px; margin:10px 0; padding:8px; font-family:monospace; font-size:10px; border:1px solid #ddd; border-radius:12px;">${requestText}</textarea>
+                    <button class="btn btn-primary" onclick="copyAndCloseRequest('${requestText.replace(/'/g, "\\'")}', this)">📋 Копировать</button>
+                    <button class="btn btn-outline" style="margin-top: 8px;" onclick="this.closest('div').parentElement.remove()">Закрыть</button>
+                    <p style="margin-top: 12px; font-size: 11px; color: #999;">После отправки ждите, пока друг примет запрос и пришлет ответ</p>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            // Сохраняем отправленный запрос
+            outgoingRequests.set(targetId, { requestData, timestamp: Date.now() });
+        }
+
+        function copyAndCloseRequest(text, btn) {
+            navigator.clipboard.writeText(text);
+            showNotification('Скопировано', 'Код скопирован, отправьте другу', 'success', 2000);
+            const modal = btn.closest('div').parentElement.parentElement;
+            if (modal) modal.remove();
+            showAnswerInput();
+        }
+
+        // ========== ПОЛУЧЕНИЕ ЗАПРОСА (здесь появляется у получателя) ==========
+        function receiveConnectionRequest(requestData) {
+            const fromId = requestData.from;
+            
+            // Проверяем на дубликаты
             const existing = pendingRequests.find(r => r.from === fromId);
             if (existing) {
                 showNotification('Повторный запрос', `${fromId.substr(0, 12)}... уже отправил запрос`, 'warning', 2000);
@@ -784,8 +778,9 @@
             const request = {
                 id: nextRequestId++,
                 from: fromId,
-                offer: offerData,
-                timestamp: new Date()
+                offer: requestData.offer,
+                timestamp: new Date(),
+                fullData: requestData
             };
             pendingRequests.push(request);
             updateRequestsList();
@@ -815,6 +810,7 @@
             `).join('');
         }
 
+        // Принять запрос
         window.acceptRequest = async function(requestId) {
             const request = pendingRequests.find(r => r.id === requestId);
             if (!request) return;
@@ -836,7 +832,10 @@
             };
             
             try {
-                await peerConnection.setRemoteDescription(new RTCSessionDescription(request.offer));
+                // Устанавливаем offer из запроса
+                const offer = new RTCSessionDescription(request.offer);
+                await peerConnection.setRemoteDescription(offer);
+                
                 const answer = await peerConnection.createAnswer();
                 await peerConnection.setLocalDescription(answer);
                 await waitForIceGathering();
@@ -849,7 +848,7 @@
                 };
                 
                 const answerText = JSON.stringify(answerData);
-                showAnswerDialog(answerText);
+                showAnswerDialog(answerText, currentPeerId);
                 
             } catch (error) {
                 console.error(error);
@@ -867,7 +866,7 @@
             }
         };
 
-        function showAnswerDialog(answerText) {
+        function showAnswerDialog(answerText, peerId) {
             const modal = document.createElement('div');
             modal.style.cssText = `
                 position: fixed;
@@ -887,20 +886,18 @@
                     <h3>Соединение готово!</h3>
                     <p style="margin: 12px 0; font-size: 13px;">Скопируйте этот код и отправьте собеседнику:</p>
                     <textarea readonly style="width:100%; height:100px; margin:10px 0; padding:8px; font-family:monospace; font-size:10px; border:1px solid #ddd; border-radius:12px;">${answerText}</textarea>
-                    <button class="btn btn-primary" onclick="copyAndClose('${answerText.replace(/'/g, "\\'")}', this)">📋 Копировать</button>
+                    <button class="btn btn-primary" onclick="copyAndCloseAnswer('${answerText.replace(/'/g, "\\'")}', this)">📋 Копировать</button>
                     <button class="btn btn-outline" style="margin-top: 8px;" onclick="this.closest('div').parentElement.remove()">Закрыть</button>
-                    <p style="margin-top: 12px; font-size: 11px; color: #999;">После отправки кода, ждите пока друг его вставит</p>
                 </div>
             `;
             document.body.appendChild(modal);
         }
 
-        function copyAndClose(text, btn) {
+        function copyAndCloseAnswer(text, btn) {
             navigator.clipboard.writeText(text);
-            showNotification('Скопировано', 'Код скопирован, отправьте другу', 'success', 2000);
+            showNotification('Скопировано', 'Ответ скопирован, отправьте другу', 'success', 2000);
             const modal = btn.closest('div').parentElement.parentElement;
             if (modal) modal.remove();
-            showAnswerInput();
         }
 
         function showAnswerInput() {
@@ -1010,7 +1007,24 @@
             return div.innerHTML;
         }
 
-        // ========== ИНИЦИАЛИЗАЦИЯ ==========
+        // Обработка вставки запроса (для демо)
+        window.pasteIncomingRequest = function() {
+            const requestText = prompt('Вставьте код-запрос от друга:');
+            if (requestText) {
+                try {
+                    const requestData = JSON.parse(requestText);
+                    if (requestData.type === 'connection_request') {
+                        receiveConnectionRequest(requestData);
+                    } else {
+                        showNotification('Ошибка', 'Неверный формат запроса', 'error', 2000);
+                    }
+                } catch(e) {
+                    showNotification('Ошибка', 'Неверный формат данных', 'error', 2000);
+                }
+            }
+        };
+
+        // Инициализация
         document.getElementById('userId').textContent = myId;
         document.getElementById('avatar').textContent = myId.charAt(0);
         updateQR();
@@ -1024,7 +1038,15 @@
             }
         };
         
-        showNotification('Готов к работе', 'QR код увеличен для лучшего сканирования', 'success', 4000);
+        // Добавляем кнопку для вставки входящего запроса
+        const pasteBtn = document.createElement('button');
+        pasteBtn.textContent = '📨 Вставить запрос от друга';
+        pasteBtn.className = 'btn btn-outline';
+        pasteBtn.style.marginTop = '10px';
+        pasteBtn.onclick = () => window.pasteIncomingRequest();
+        document.querySelector('.qr-section:last-child').appendChild(pasteBtn);
+        
+        showNotification('Готов к работе', 'Ваш ID: ' + myId, 'success', 4000);
     </script>
 </body>
 </html>
