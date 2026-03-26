@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>P2P Messenger - Без сервера</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            background: white;
+        }
+
+        .sidebar {
+            width: 300px;
+            background: #f8f9fa;
+            border-right: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .user-info {
+            padding: 20px;
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .user-id {
+            font-family: monospace;
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            word-break: break-all;
+            margin: 10px 0;
+        }
+
+        .copy-btn {
+            width: 100%;
+            padding: 10px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .copy-btn:active {
+            background: #5a67d8;
+        }
+
+        .connection-section {
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .connection-section h3 {
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .connection-section input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 12px;
+        }
+
+        .connect-btn {
+            width: 100%;
+            padding: 10px;
+            background: #48bb78;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .connect-btn:active {
+            background: #38a169;
+        }
+
+        .peer-info {
+            padding: 15px;
+            background: #e8f0fe;
+            margin: 10px;
+            border-radius: 8px;
+        }
+
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            padding: 20px;
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .status {
+            font-size: 12px;
+            padding: 8px;
+            text-align: center;
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .status.connected {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .status.connecting {
+            background: #feebc8;
+            color: #744210;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message {
+            max-width: 70%;
+            padding: 10px 15px;
+            border-radius: 12px;
+            word-wrap: break-word;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.sent {
+            align-self: flex-end;
+            background: #667eea;
+            color: white;
+        }
+
+        .message.received {
+            align-self: flex-start;
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .message-info {
+            font-size: 10px;
+            margin-bottom: 5px;
+            opacity: 0.7;
+        }
+
+        .input-area {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+        }
+
+        #messageInput {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            resize: none;
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        #messageInput:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        #sendBtn {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        #sendBtn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .offer-area {
+            margin-top: 10px;
+            padding: 10px;
+            background: #fff3cd;
+            border-radius: 8px;
+        }
+
+        .offer-text {
+            font-family: monospace;
+            font-size: 10px;
+            word-break: break-all;
+            background: white;
+            padding: 8px;
+            border-radius: 4px;
+            margin: 8px 0;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="user-info">
+                <h3>🔑 Ваш ID</h3>
+                <div class="user-id" id="userId"></div>
+                <button class="copy-btn" onclick="copyUserId()">📋 Копировать ID</button>
+            </div>
+            
+            <div class="connection-section">
+                <h3>📞 Подключение к собеседнику</h3>
+                <input type="text" id="targetId" placeholder="Введите ID собеседника">
+                <button class="connect-btn" onclick="createOffer()">🎯 Создать приглашение</button>
+            </div>
+
+            <div class="connection-section">
+                <h3>📥 Принять приглашение</h3>
+                <textarea id="offerInput" rows="3" placeholder="Вставьте сюда приглашение от собеседника"></textarea>
+                <button class="connect-btn" onclick="acceptOffer()">✅ Принять соединение</button>
+            </div>
+
+            <div id="peerInfo" class="peer-info" style="display: none;">
+                <strong>👤 Собеседник:</strong>
+                <div id="peerId"></div>
+            </div>
+        </div>
+        
+        <div class="chat-area">
+            <div class="chat-header">
+                <h3>💬 P2P Мессенджер</h3>
+            </div>
+            <div class="status" id="status">⚡ Ожидание подключения</div>
+            <div class="messages" id="messages"></div>
+            <div class="input-area">
+                <textarea id="messageInput" placeholder="Введите сообщение..." rows="3"></textarea>
+                <button id="sendBtn" onclick="sendMessage()" disabled>📨 Отправить</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Конфигурация STUN серверов (для обхода NAT)
+        const configuration = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' },
+                { urls: 'stun:stun2.l.google.com:19302' },
+                { urls: 'stun:stun3.l.google.com:19302' },
+                { urls: 'stun:stun4.l.google.com:19302' }
+            ]
+        };
+
+        let peerConnection = null;
+        let dataChannel = null;
+        let currentPeerId = null;
+        let myId = generateUserId();
+        let pendingCandidates = [];
+
+        // Генерация уникального ID
+        function generateUserId() {
+            const timestamp = Date.now().toString(36);
+            const random = Math.random().toString(36).substr(2, 8);
+            return `${timestamp}${random}`.toUpperCase();
+        }
+
+        // Копирование ID
+        function copyUserId() {
+            navigator.clipboard.writeText(myId).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✅ Скопировано!';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            });
+        }
+
+        // Создание приглашения (Offer)
+        async function createOffer() {
+            const targetId = document.getElementById('targetId').value.trim();
+            if (!targetId) {
+                alert('Введите ID собеседника');
+                return;
+            }
+            
+            currentPeerId = targetId;
+            updateStatus('connecting', 'Создание приглашения...');
+            
+            if (peerConnection) {
+                peerConnection.close();
+            }
+            
+            peerConnection = new RTCPeerConnection(configuration);
+            
+            // Создаем data channel
+            dataChannel = peerConnection.createDataChannel('chat');
+            setupDataChannel(dataChannel);
+            
+            // Собираем ICE кандидаты
+            peerConnection.onicecandidate = (event) => {
+                if (event.candidate) {
+                    console.log('ICE Candidate collected');
+                }
+            };
+            
+            peerConnection.onicegatheringstatechange = () => {
+                if (peerConnection.iceGatheringState === 'complete') {
+                    // Все ICE кандидаты собраны, показываем offer
+                    showOffer();
+                }
+            };
+            
+            try {
+                const offer = await peerConnection.createOffer();
+                await peerConnection.setLocalDescription(offer);
+                
+                // Если ICE уже собраны, показываем сразу
+                if (peerConnection.iceGatheringState === 'complete') {
+                    showOffer();
+                }
+            } catch (error) {
+                console.error('Error creating offer:', error);
+                updateStatus('error', 'Ошибка создания приглашения');
+            }
+        }
+        
+        function showOffer() {
+            const offerData = {
+                type: 'offer',
+                sdp: peerConnection.localDescription.sdp,
+                from: myId,
+                to: currentPeerId
+            };
+            
+            const offerText = JSON.stringify(offerData);
+            
+            // Показываем диалог с приглашением
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.8);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+            `;
+            
+            modal.innerHTML = `
+                <div style="background: white; padding: 20px; border-radius: 12px; max-width: 90%; width: 500px;">
+                    <h3>📨 Отправьте это приглашение собеседнику</h3>
+                    <textarea readonly style="width: 100%; height: 200px; margin: 10px 0; padding: 8px; font-family: monospace; font-size: 11px;">${offerText}</textarea>
+                    <button onclick="copyOfferText('${offerText.replace(/'/g, "\\'")}')" style="padding: 10px; background: #667eea; color: white; border: none; border-radius: 8px; margin-right: 10px;">📋 Копировать</button>
+                    <button onclick="this.closest('div').parentElement.remove()" style="padding: 10px; background: #ccc; border: none; border-radius: 8px;">Закрыть</button>
+                    <p style="margin-top: 10px; font-size: 12px; color: #666;">После отправки ждите ответа от собеседника...</p>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            updateStatus('waiting', 'Ожидание ответа от собеседника...');
+        }
+        
+        function copyOfferText(text) {
+            navigator.clipboard.writeText(text);
+            alert('Приглашение скопировано! Отправьте его собеседнику');
+        }
+        
+        // Принятие приглашения
+        async function acceptOffer() {
+            const offerText = document.getElementById('offerInput').value.trim();
+            if (!offerText) {
+                alert('Вставьте приглашение от собеседника');
+                return;
+            }
+            
+            try {
+                const offerData = JSON.parse(offerText);
+                if (offerData.type !== 'offer') {
+                    alert('Неверный формат приглашения');
+                    return;
+                }
+                
+                currentPeerId = offerData.from;
+                document.getElementById('peerId').textContent = currentPeerId;
+                document.getElementById('peerInfo').style.display = 'block';
+                updateStatus('connecting', 'Принятие приглашения...');
+                
+                if (peerConnection) {
+                    peerConnection.close();
+                }
+                
+                peerConnection = new RTCPeerConnection(configuration);
+                
+                peerConnection.ondatachannel = (event) => {
+                    dataChannel = event.channel;
+                    setupDataChannel(dataChannel);
+                };
+                
+                peerConnection.onicecandidate = (event) => {
+                    if (event.candidate) {
+                        sendAnswerWithCandidates();
+                    }
+                };
+                
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(offerData));
+                
+                const answer = await peerConnection.createAnswer();
+                await peerConnection.setLocalDescription(answer);
+                
+                // Отправляем ответ после сбора ICE
+                setTimeout(() => sendAnswerWithCandidates(), 1000);
+                
+            } catch (error) {
+                console.error('Error accepting offer:', error);
+                alert('Ошибка при принятии приглашения. Проверьте формат.');
+                updateStatus('error', 'Ошибка подключения');
+            }
+        }
+        
+        async function sendAnswerWithCandidates() {
+            if (peerConnection && peerConnection.localDescription) {
+                const answerData = {
+                    type: 'answer',
+                    sdp: peerConnection.localDescription.sdp,
+                    from: myId,
+                    to: currentPeerId
+                };
+                
+                const answerText = JSON.stringify(answerData);
+                
+                // Показываем ответ
+                const modal = document.createElement('div');
+                modal.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(0,0,0,0.8);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 1000;
+                `;
+                
+                modal.innerHTML = `
+                    <div style="background: white; padding: 20px; border-radius: 12px; max-width: 90%; width: 500px;">
+                        <h3>📤 Отправьте этот ответ собеседнику</h3>
+                        <textarea readonly style="width: 100%; height: 200px; margin: 10px 0; padding: 8px; font-family: monospace; font-size: 11px;">${answerText}</textarea>
+                        <button onclick="copyAnswerText('${answerText.replace(/'/g, "\\'")}')" style="padding: 10px; background: #667eea; color: white; border: none; border-radius: 8px;">📋 Копировать</button>
+                        <button onclick="this.closest('div').parentElement.remove()" style="padding: 10px; background: #ccc; border: none; border-radius: 8px; margin-left: 10px;">Закрыть</button>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+                updateStatus('waiting', 'Ожидание подтверждения...');
+            }
+        }
+        
+        function copyAnswerText(text) {
+            navigator.clipboard.writeText(text);
+            alert('Ответ скопирован! Отправьте его собеседнику');
+        }
+        
+        // Обработка ответа
+        window.handleAnswer = async function(answerText) {
+            try {
+                const answerData = JSON.parse(answerText);
+                if (answerData.type === 'answer' && peerConnection) {
+                    await peerConnection.setRemoteDescription(new RTCSessionDescription(answerData));
+                    updateStatus('connected', '✅ Подключено!');
+                    document.getElementById('sendBtn').disabled = false;
+                    addSystemMessage('🔗 Соединение установлено!');
+                }
+            } catch (error) {
+                console.error('Error handling answer:', error);
+            }
+        };
+        
+        // Настройка DataChannel
+        function setupDataChannel(channel) {
+            channel.onopen = () => {
+                updateStatus('connected', '✅ Подключено! Можно общаться');
+                document.getElementById('sendBtn').disabled = false;
+                addSystemMessage('🔗 Соединение установлено!');
+            };
+            
+            channel.onclose = () => {
+                updateStatus('disconnected', '❌ Соединение разорвано');
+                document.getElementById('sendBtn').disabled = true;
+                addSystemMessage('❌ Соединение разорвано');
+            };
+            
+            channel.onerror = (error) => {
+                console.error('DataChannel error:', error);
+                addSystemMessage('⚠️ Ошибка соединения');
+            };
+            
+            channel.onmessage = (event) => {
+                receiveMessage(event.data);
+            };
+        }
+        
+        // Отправка сообщения
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            if (!dataChannel || dataChannel.readyState !== 'open') {
+                alert('Соединение не установлено');
+                return;
+            }
+            
+            dataChannel.send(message);
+            addMessageToUI(message, true);
+            input.value = '';
+        }
+        
+        // Получение сообщения
+        function receiveMessage(message) {
+            addMessageToUI(message, false);
+        }
+        
+        // Добавление сообщения в UI
+        function addMessageToUI(message, isSent) {
+            const messagesDiv = document.getElementById('messages');
+            const messageElement = document.createElement('div');
+            messageElement.className = `message ${isSent ? 'sent' : 'received'}`;
+            
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const sender = isSent ? 'Вы' : (currentPeerId ? currentPeerId.substr(0, 12) : 'Собеседник');
+            
+            messageElement.innerHTML = `
+                <div class="message-info">${sender} • ${time}</div>
+                <div class="message-text">${escapeHtml(message)}</div>
+            `;
+            
+            messagesDiv.appendChild(messageElement);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        // Системное сообщение
+        function addSystemMessage(message) {
+            const messagesDiv = document.getElementById('messages');
+            const msgElement = document.createElement('div');
+            msgElement.style.cssText = 'text-align: center; color: #666; font-size: 12px; padding: 5px;';
+            msgElement.textContent = message;
+            messagesDiv.appendChild(msgElement);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        // Обновление статуса
+        function updateStatus(status, text) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = text;
+            statusDiv.className = 'status';
+            
+            if (status === 'connected') {
+                statusDiv.classList.add('connected');
+            } else if (status === 'connecting') {
+                statusDiv.classList.add('connecting');
+            }
+        }
+        
+        // Экранирование HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Отображение ID пользователя
+        document.getElementById('userId').textContent = myId;
+        
+        // Обработка вставки ответа
+        window.pasteAnswer = function() {
+            const answer = prompt('Вставьте ответ от собеседника:');
+            if (answer) {
+                window.handleAnswer(answer);
+            }
+        };
+        
+        // Enter для отправки
+        document.getElementById('messageInput').onkeypress = (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        };
+        
+        console.log('✅ P2P Messenger готов к работе!');
+        console.log('Ваш ID:', myId);
+    </script>
+</body>
+</html>
