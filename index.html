@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>P2P Messenger - QR Connect</title>
+    <title>P2P Messenger - Мгновенное подключение</title>
     <style>
         * {
             margin: 0;
@@ -25,6 +25,7 @@
             margin: 0 auto;
         }
 
+        /* Уведомления */
         .notification-container {
             position: fixed;
             top: 20px;
@@ -134,7 +135,7 @@
         }
 
         .btn {
-            padding: 10px 16px;
+            padding: 12px 16px;
             border: none;
             border-radius: 12px;
             font-size: 14px;
@@ -171,16 +172,6 @@
         #qrcode canvas, #qrcode img {
             width: 150px !important;
             height: 150px !important;
-        }
-
-        .connect-methods {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        .connect-methods .btn {
-            flex: 1;
-            margin-top: 0;
         }
 
         .connect-input {
@@ -358,6 +349,16 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        
+        .status-badge {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        .status-online { background: #10b981; box-shadow: 0 0 5px #10b981; }
+        .status-offline { background: #ef4444; }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
@@ -367,7 +368,7 @@
         
         <div class="header">
             <h1>🔗 P2P Messenger</h1>
-            <p>QR код или ID для подключения</p>
+            <p>Отсканируй QR или введи ID — сразу подключись</p>
         </div>
         
         <div class="grid">
@@ -381,20 +382,17 @@
 
                 <div class="qr-section">
                     <h3>📱 Ваш QR код</h3>
-                    <p style="font-size: 12px; color: #666;">Сканируйте для подключения</p>
+                    <p style="font-size: 12px; color: #666;">Друг сканирует и подключается</p>
                     <div class="qr-container" id="qrcode"></div>
-                    <button class="btn btn-outline" onclick="copyQRCode()">📋 Копировать QR код как текст</button>
                 </div>
 
                 <div class="qr-section">
                     <h3>🔌 Подключиться к другу</h3>
                     <input type="text" id="friendId" class="connect-input" placeholder="Введите ID друга">
-                    <div class="connect-methods">
-                        <button class="btn btn-primary" onclick="connectById()">📨 Подключиться по ID</button>
-                    </div>
-                    <div style="margin-top: 10px; text-align: center; color: #999; font-size: 12px;">или</div>
-                    <textarea id="qrCodeInput" class="connect-input" rows="2" placeholder="Вставьте QR код (текст) друга"></textarea>
-                    <button class="btn btn-primary" onclick="connectByQRText()">📷 Подключиться по QR тексту</button>
+                    <button class="btn btn-primary" onclick="connectToFriend()">🔗 Подключиться</button>
+                    <div style="margin-top: 12px; text-align: center; color: #999; font-size: 12px;">или</div>
+                    <textarea id="qrTextInput" class="connect-input" rows="2" placeholder="Вставьте QR код друга (текст)"></textarea>
+                    <button class="btn btn-primary" onclick="connectByQRText()">📷 Подключиться по QR</button>
                 </div>
 
                 <div class="requests-panel">
@@ -426,30 +424,30 @@
     </div>
 
     <script>
-        // Конфигурация
+        // Конфигурация WebRTC
         const configuration = {
             iceServers: [
                 { urls: 'stun:stun.l.google.com:19302' },
                 { urls: 'stun:stun1.l.google.com:19302' },
-                { urls: 'stun:stun2.l.google.com:19302' }
+                { urls: 'stun:stun2.l.google.com:19302' },
+                { urls: 'stun:stun3.l.google.com:19302' },
+                { urls: 'stun:stun4.l.google.com:19302' }
             ]
         };
 
-        // Переменные
+        // Глобальные переменные
         let peerConnection = null;
         let dataChannel = null;
         let currentPeerId = null;
         let myId = generateUserId();
-        let pendingRequests = []; // запросы к нам
-        let outgoingRequests = new Map(); // отправленные нами запросы (ожидаем ответ)
+        let pendingRequests = []; // Входящие запросы
+        let activeConnections = new Map(); // Активные соединения
         let nextRequestId = 1;
-        let activeConnections = new Map();
-        let currentQRData = null;
         
         let chats = loadChats();
         let currentChat = null;
 
-        // Уведомления
+        // ========== УВЕДОМЛЕНИЯ ==========
         function showNotification(title, message, type = 'info', duration = 3500) {
             const container = document.getElementById('notificationContainer');
             const notification = document.createElement('div');
@@ -470,7 +468,7 @@
             }, duration);
         }
 
-        // Хранение
+        // ========== ХРАНЕНИЕ ==========
         function generateUserId() {
             let saved = localStorage.getItem('myUserId');
             if (saved) return saved;
@@ -573,38 +571,13 @@
             return d.toLocaleDateString();
         }
 
-        // QR код
-        async function generateQRWithOffer() {
-            const pc = new RTCPeerConnection(configuration);
-            const dc = pc.createDataChannel('chat');
-            
-            return new Promise(async (resolve) => {
-                let offerData = null;
-                pc.onicecandidate = (event) => {
-                    if (event.candidate === null && offerData) {
-                        resolve(offerData);
-                    }
-                };
-                
-                const offer = await pc.createOffer();
-                await pc.setLocalDescription(offer);
-                
-                setTimeout(() => {
-                    if (pc.localDescription) {
-                        offerData = {
-                            from: myId,
-                            sdp: pc.localDescription.sdp
-                        };
-                        resolve(offerData);
-                    }
-                }, 800);
-            });
-        }
-
-        async function updateQR() {
-            const offerData = await generateQRWithOffer();
-            currentQRData = offerData;
-            const code = JSON.stringify(offerData);
+        // ========== QR КОД ==========
+        async function generateQR() {
+            const qrData = {
+                id: myId,
+                t: Date.now()
+            };
+            const code = JSON.stringify(qrData);
             
             const qrcodeDiv = document.getElementById('qrcode');
             qrcodeDiv.innerHTML = '';
@@ -618,22 +591,13 @@
             });
         }
 
-        function copyQRCode() {
-            if (currentQRData) {
-                navigator.clipboard.writeText(JSON.stringify(currentQRData));
-                showNotification('Скопировано', 'QR код скопирован как текст', 'success', 1500);
-            }
-        }
-
         function copyUserId() {
             navigator.clipboard.writeText(myId);
             showNotification('Скопировано', 'Ваш ID скопирован', 'success', 1500);
         }
 
-        // ========== ОТПРАВКА ЗАПРОСА (правильная логика) ==========
-        
-        // Подключение по ID друга
-        async function connectById() {
+        // ========== ПОДКЛЮЧЕНИЕ К ДРУГУ ==========
+        async function connectToFriend() {
             const friendId = document.getElementById('friendId').value.trim();
             if (!friendId) {
                 showNotification('Ошибка', 'Введите ID друга', 'error', 2000);
@@ -643,58 +607,56 @@
                 showNotification('Ошибка', 'Нельзя подключиться к самому себе', 'warning', 2000);
                 return;
             }
-            await sendConnectionRequest(friendId);
+            await initiateConnection(friendId);
         }
 
-        // Подключение по QR тексту
         async function connectByQRText() {
-            const qrText = document.getElementById('qrCodeInput').value.trim();
+            const qrText = document.getElementById('qrTextInput').value.trim();
             if (!qrText) {
                 showNotification('Ошибка', 'Вставьте QR код друга', 'error', 2000);
                 return;
             }
             try {
                 const data = JSON.parse(qrText);
-                const friendId = data.from;
+                const friendId = data.id;
                 if (friendId === myId) {
                     showNotification('Ошибка', 'Это ваш собственный QR код', 'warning', 2000);
                     return;
                 }
-                await sendConnectionRequestWithOffer(friendId, data);
+                await initiateConnection(friendId);
             } catch(e) {
                 showNotification('Ошибка', 'Неверный формат QR кода', 'error', 2000);
             }
         }
 
-        // Отправка запроса на подключение (создаем offer)
-        async function sendConnectionRequest(targetId) {
-            showNotification('Создание запроса', `Создаем приглашение для ${targetId.substr(0, 12)}...`, 'info', 1500);
+        // Инициировать соединение (отправить запрос)
+        async function initiateConnection(targetId) {
+            showNotification('Подключение', `Отправляем запрос ${targetId.substr(0, 12)}...`, 'info', 1500);
             
             if (peerConnection) peerConnection.close();
             
             peerConnection = new RTCPeerConnection(configuration);
             dataChannel = peerConnection.createDataChannel('chat');
             
-            // Временно сохраняем обработчик, но не настраиваем пока
-            let tempResolve = null;
-            let offerCreated = false;
+            // Настраиваем обработчик получения ответа
+            peerConnection.ondatachannel = (event) => {
+                dataChannel = event.channel;
+                setupDataChannel(dataChannel);
+            };
             
+            // Собираем ICE кандидаты и отправляем offer
+            let offerCreated = false;
             peerConnection.onicecandidate = async (event) => {
                 if (event.candidate === null && !offerCreated) {
                     offerCreated = true;
                     const offerData = {
-                        type: 'connection_request',
+                        type: 'offer',
+                        sdp: peerConnection.localDescription.sdp,
                         from: myId,
-                        target: targetId,
-                        offer: {
-                            sdp: peerConnection.localDescription.sdp,
-                            type: 'offer'
-                        }
+                        to: targetId
                     };
-                    
-                    // Показываем offer для отправки
-                    showOfferToSend(offerData, targetId);
-                    if (tempResolve) tempResolve();
+                    // Отправляем запрос получателю
+                    sendRequestToPeer(targetId, offerData);
                 }
             };
             
@@ -703,28 +665,15 @@
                 await peerConnection.setLocalDescription(offer);
             } catch (error) {
                 console.error(error);
-                showNotification('Ошибка', 'Не удалось создать запрос', 'error', 2000);
+                showNotification('Ошибка', 'Не удалось создать соединение', 'error', 2000);
             }
         }
 
-        // Отправка запроса с готовым offer (из QR)
-        async function sendConnectionRequestWithOffer(targetId, offerData) {
-            showNotification('Отправка запроса', `Отправляем запрос ${targetId.substr(0, 12)}...`, 'info', 1500);
-            
-            // Создаем запрос к пользователю
-            const requestData = {
-                type: 'connection_request',
-                from: myId,
-                target: targetId,
-                offer: offerData
-            };
-            
-            // Показываем offer для отправки
-            showOfferToSend(requestData, targetId);
-        }
-
-        function showOfferToSend(requestData, targetId) {
-            const requestText = JSON.stringify(requestData);
+        // Отправить запрос (имитация через локальное хранилище для демо)
+        function sendRequestToPeer(targetId, offerData) {
+            // В реальном приложении здесь был бы сигналинг сервер
+            // Для демо используем prompt для передачи offer
+            const offerText = JSON.stringify(offerData);
             
             const modal = document.createElement('div');
             modal.style.cssText = `
@@ -741,51 +690,64 @@
             `;
             modal.innerHTML = `
                 <div style="background: white; border-radius: 28px; padding: 24px; max-width: 90%; width: 340px; text-align: center;">
-                    <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 28px;">📨</div>
+                    <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 28px;">🔗</div>
                     <h3>Отправьте запрос другу</h3>
                     <p style="margin: 12px 0; font-size: 13px;">Скопируйте этот код и отправьте другу (Telegram, WhatsApp и т.д.)</p>
-                    <textarea readonly style="width:100%; height:150px; margin:10px 0; padding:8px; font-family:monospace; font-size:10px; border:1px solid #ddd; border-radius:12px;">${requestText}</textarea>
-                    <button class="btn btn-primary" onclick="copyAndCloseRequest('${requestText.replace(/'/g, "\\'")}', this)">📋 Копировать</button>
+                    <textarea readonly style="width:100%; height:120px; margin:10px 0; padding:8px; font-family:monospace; font-size:10px; border:1px solid #ddd; border-radius:12px;">${offerText}</textarea>
+                    <button class="btn btn-primary" onclick="copyAndClose('${offerText.replace(/'/g, "\\'")}', this)">📋 Копировать</button>
                     <button class="btn btn-outline" style="margin-top: 8px;" onclick="this.closest('div').parentElement.remove()">Закрыть</button>
-                    <p style="margin-top: 12px; font-size: 11px; color: #999;">После отправки ждите, пока друг примет запрос и пришлет ответ</p>
+                    <p style="margin-top: 12px; font-size: 11px; color: #999;">Друг должен вставить этот код в поле "Вставить запрос"</p>
                 </div>
             `;
             document.body.appendChild(modal);
-            
-            // Сохраняем отправленный запрос
-            outgoingRequests.set(targetId, { requestData, timestamp: Date.now() });
         }
 
-        function copyAndCloseRequest(text, btn) {
+        function copyAndClose(text, btn) {
             navigator.clipboard.writeText(text);
             showNotification('Скопировано', 'Код скопирован, отправьте другу', 'success', 2000);
             const modal = btn.closest('div').parentElement.parentElement;
             if (modal) modal.remove();
-            showAnswerInput();
         }
 
-        // ========== ПОЛУЧЕНИЕ ЗАПРОСА (здесь появляется у получателя) ==========
-        function receiveConnectionRequest(requestData) {
-            const fromId = requestData.from;
-            
-            // Проверяем на дубликаты
-            const existing = pendingRequests.find(r => r.from === fromId);
-            if (existing) {
-                showNotification('Повторный запрос', `${fromId.substr(0, 12)}... уже отправил запрос`, 'warning', 2000);
-                return;
+        // ========== ПОЛУЧЕНИЕ ЗАПРОСА (ВСТАВИТЬ КОД ОТ ДРУГА) ==========
+        function receiveRequest(offerText) {
+            try {
+                const offerData = JSON.parse(offerText);
+                if (offerData.type !== 'offer') {
+                    showNotification('Ошибка', 'Неверный формат запроса', 'error', 2000);
+                    return;
+                }
+                
+                const fromId = offerData.from;
+                if (fromId === myId) {
+                    showNotification('Ошибка', 'Это ваш собственный запрос', 'warning', 2000);
+                    return;
+                }
+                
+                // Проверяем на дубликаты
+                const existing = pendingRequests.find(r => r.from === fromId);
+                if (existing) {
+                    showNotification('Повторный запрос', `${fromId.substr(0, 12)}... уже отправил запрос`, 'warning', 2000);
+                    return;
+                }
+                
+                const request = {
+                    id: nextRequestId++,
+                    from: fromId,
+                    offer: offerData,
+                    timestamp: new Date()
+                };
+                pendingRequests.push(request);
+                updateRequestsList();
+                
+                showNotification('🔔 Новый запрос!', `${fromId.substr(0, 12)}... хочет с вами связаться`, 'info', 5000);
+                
+                // Очищаем поле
+                document.getElementById('incomingRequestInput').value = '';
+                
+            } catch(e) {
+                showNotification('Ошибка', 'Неверный формат запроса', 'error', 2000);
             }
-            
-            const request = {
-                id: nextRequestId++,
-                from: fromId,
-                offer: requestData.offer,
-                timestamp: new Date(),
-                fullData: requestData
-            };
-            pendingRequests.push(request);
-            updateRequestsList();
-            
-            showNotification('🔔 Новый запрос!', `${fromId.substr(0, 12)}... хочет с вами связаться`, 'info', 5000);
         }
 
         function updateRequestsList() {
@@ -848,7 +810,7 @@
                 };
                 
                 const answerText = JSON.stringify(answerData);
-                showAnswerDialog(answerText, currentPeerId);
+                showAnswerDialog(answerText);
                 
             } catch (error) {
                 console.error(error);
@@ -866,7 +828,7 @@
             }
         };
 
-        function showAnswerDialog(answerText, peerId) {
+        function showAnswerDialog(answerText) {
             const modal = document.createElement('div');
             modal.style.cssText = `
                 position: fixed;
@@ -886,41 +848,21 @@
                     <h3>Соединение готово!</h3>
                     <p style="margin: 12px 0; font-size: 13px;">Скопируйте этот код и отправьте собеседнику:</p>
                     <textarea readonly style="width:100%; height:100px; margin:10px 0; padding:8px; font-family:monospace; font-size:10px; border:1px solid #ddd; border-radius:12px;">${answerText}</textarea>
-                    <button class="btn btn-primary" onclick="copyAndCloseAnswer('${answerText.replace(/'/g, "\\'")}', this)">📋 Копировать</button>
+                    <button class="btn btn-primary" onclick="copyAnswerAndClose('${answerText.replace(/'/g, "\\'")}', this)">📋 Копировать</button>
                     <button class="btn btn-outline" style="margin-top: 8px;" onclick="this.closest('div').parentElement.remove()">Закрыть</button>
                 </div>
             `;
             document.body.appendChild(modal);
         }
 
-        function copyAndCloseAnswer(text, btn) {
+        function copyAnswerAndClose(text, btn) {
             navigator.clipboard.writeText(text);
             showNotification('Скопировано', 'Ответ скопирован, отправьте другу', 'success', 2000);
             const modal = btn.closest('div').parentElement.parentElement;
             if (modal) modal.remove();
         }
 
-        function showAnswerInput() {
-            const container = document.querySelector('.qr-section:last-child');
-            const existing = document.getElementById('answerInputBtn');
-            if (existing) return;
-            
-            const answerDiv = document.createElement('div');
-            answerDiv.id = 'answerInputBtn';
-            answerDiv.style.marginTop = '10px';
-            answerDiv.innerHTML = `
-                <button class="btn btn-success" onclick="openAnswerDialog()">📨 Вставить ответ от друга</button>
-            `;
-            container.appendChild(answerDiv);
-        }
-
-        window.openAnswerDialog = function() {
-            const answer = prompt('Вставьте код-ответ от собеседника:');
-            if (answer) {
-                handleAnswer(answer);
-            }
-        };
-
+        // Обработка ответа (инициатор вставляет ответ)
         async function handleAnswer(answerText) {
             try {
                 const answerData = JSON.parse(answerText);
@@ -1007,29 +949,42 @@
             return div.innerHTML;
         }
 
-        // Обработка вставки запроса (для демо)
-        window.pasteIncomingRequest = function() {
-            const requestText = prompt('Вставьте код-запрос от друга:');
-            if (requestText) {
-                try {
-                    const requestData = JSON.parse(requestText);
-                    if (requestData.type === 'connection_request') {
-                        receiveConnectionRequest(requestData);
-                    } else {
-                        showNotification('Ошибка', 'Неверный формат запроса', 'error', 2000);
-                    }
-                } catch(e) {
-                    showNotification('Ошибка', 'Неверный формат данных', 'error', 2000);
-                }
-            }
-        };
+        // ========== ДОБАВЛЯЕМ ПОЛЕ ДЛЯ ВСТАВКИ ЗАПРОСА ==========
+        function addRequestInput() {
+            const container = document.querySelector('.requests-panel');
+            const inputDiv = document.createElement('div');
+            inputDiv.style.marginTop = '15px';
+            inputDiv.style.marginBottom = '15px';
+            inputDiv.innerHTML = `
+                <div style="background: #f0f0f0; border-radius: 12px; padding: 12px;">
+                    <div style="font-size: 12px; font-weight: 600; margin-bottom: 8px;">📨 Вставить запрос от друга</div>
+                    <textarea id="incomingRequestInput" rows="2" style="width:100%; padding:8px; border-radius:8px; border:1px solid #ddd; font-family:monospace; font-size:10px;" placeholder="Вставьте сюда код запроса от друга"></textarea>
+                    <button class="btn btn-primary" style="margin-top: 8px; padding: 8px;" onclick="receiveRequest(document.getElementById('incomingRequestInput').value)">✅ Принять запрос</button>
+                </div>
+            `;
+            container.insertBefore(inputDiv, container.firstChild);
+            
+            // Добавляем поле для вставки ответа для инициатора
+            const answerDiv = document.createElement('div');
+            answerDiv.style.marginTop = '15px';
+            answerDiv.style.marginBottom = '15px';
+            answerDiv.innerHTML = `
+                <div style="background: #f0f0f0; border-radius: 12px; padding: 12px;">
+                    <div style="font-size: 12px; font-weight: 600; margin-bottom: 8px;">📨 Вставить ответ от друга</div>
+                    <textarea id="incomingAnswerInput" rows="2" style="width:100%; padding:8px; border-radius:8px; border:1px solid #ddd; font-family:monospace; font-size:10px;" placeholder="Вставьте сюда код ответа от друга"></textarea>
+                    <button class="btn btn-success" style="margin-top: 8px; padding: 8px;" onclick="handleAnswer(document.getElementById('incomingAnswerInput').value)">✅ Подтвердить соединение</button>
+                </div>
+            `;
+            container.appendChild(answerDiv);
+        }
 
-        // Инициализация
+        // ========== ИНИЦИАЛИЗАЦИЯ ==========
         document.getElementById('userId').textContent = myId;
         document.getElementById('avatar').textContent = myId.charAt(0);
-        updateQR();
+        generateQR();
         updateChatsList();
         updateRequestsList();
+        addRequestInput();
         
         document.getElementById('messageInput').onkeypress = (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
@@ -1037,14 +992,6 @@
                 sendMessage();
             }
         };
-        
-        // Добавляем кнопку для вставки входящего запроса
-        const pasteBtn = document.createElement('button');
-        pasteBtn.textContent = '📨 Вставить запрос от друга';
-        pasteBtn.className = 'btn btn-outline';
-        pasteBtn.style.marginTop = '10px';
-        pasteBtn.onclick = () => window.pasteIncomingRequest();
-        document.querySelector('.qr-section:last-child').appendChild(pasteBtn);
         
         showNotification('Готов к работе', 'Ваш ID: ' + myId, 'success', 4000);
     </script>
