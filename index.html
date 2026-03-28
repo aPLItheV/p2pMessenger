@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>P2P Messenger</title>
+    <title>P2P Messenger - QR Connect</title>
     <style>
         * {
             margin: 0;
@@ -31,6 +31,9 @@
             color: white;
             text-align: center;
         }
+
+        .header h1 { font-size: 1.6rem; margin-bottom: 6px; }
+        .header p { opacity: 0.9; font-size: 0.85rem; }
 
         .grid {
             display: flex;
@@ -155,45 +158,6 @@
             margin: 10px 0;
         }
 
-        .request-card {
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-            border-radius: 16px;
-            padding: 16px;
-            margin-bottom: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .request-info {
-            flex: 1;
-        }
-
-        .request-user {
-            font-weight: 600;
-            font-size: 14px;
-            margin-bottom: 4px;
-        }
-
-        .request-buttons {
-            display: flex;
-            gap: 10px;
-        }
-
-        .request-buttons button {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 10px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .no-requests {
-            text-align: center;
-            color: #999;
-            padding: 20px;
-        }
-
         .chats-list {
             margin-top: 20px;
             border-top: 1px solid #e0e0e0;
@@ -284,6 +248,42 @@
             cursor: not-allowed;
         }
 
+        /* Модальное окно запроса */
+        .request-modal {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            z-index: 1000;
+            max-width: 400px;
+            margin: 0 auto;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .request-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        .request-buttons button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
         @media (max-width: 768px) {
             .grid { flex-direction: column; }
             .chat-panel { height: 50vh; }
@@ -314,9 +314,9 @@
                 </div>
 
                 <div class="scan-section">
-                    <h3>🔍 Отсканировать QR друга</h3>
-                    <input type="text" id="scanInput" class="scan-input" placeholder="Введите ID друга или вставьте QR текст">
-                    <button class="btn btn-primary" onclick="sendConnection()">📡 Подключиться</button>
+                    <h3>🔍 Подключиться к другу</h3>
+                    <input type="text" id="scanInput" class="scan-input" placeholder="Введите ID друга">
+                    <button class="btn btn-primary" onclick="sendConnection()">📡 Отправить запрос</button>
                 </div>
 
                 <div class="chats-list">
@@ -339,52 +339,57 @@
         </div>
     </div>
 
-    <div id="requestModal" style="display: none; position: fixed; bottom: 20px; left: 20px; right: 20px; background: white; border-radius: 20px; padding: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 1000; max-width: 400px; margin: 0 auto;">
-        <div id="requestContent"></div>
-    </div>
+    <div id="requestModal" class="request-modal" style="display: none;"></div>
 
     <script>
+        // Конфигурация WebRTC
         const configuration = {
             iceServers: [
                 { urls: 'stun:stun.l.google.com:19302' },
-                { urls: 'stun:stun1.l.google.com:19302' }
+                { urls: 'stun:stun1.l.google.com:19302' },
+                { urls: 'stun:stun2.l.google.com:19302' }
             ]
         };
 
-        let myId = localStorage.getItem('myId') || (() => {
-            let id = Math.random().toString(36).substr(2, 10).toUpperCase();
-            localStorage.setItem('myId', id);
-            return id;
-        })();
+        // Генерация ID
+        let myId = localStorage.getItem('myId');
+        if (!myId) {
+            myId = Math.random().toString(36).substr(2, 10).toUpperCase();
+            localStorage.setItem('myId', myId);
+        }
 
+        // Переменные
         let peerConnection = null;
         let dataChannel = null;
         let currentPeer = null;
         let activeConnections = new Map();
-        let pendingRequest = null;
+        let pendingOffer = null;
 
+        // Чаты
         let chats = JSON.parse(localStorage.getItem('chats') || '{}');
-        let currentChat = null;
 
         function saveChats() {
             localStorage.setItem('chats', JSON.stringify(chats));
         }
 
         function addMessage(peerId, text, isSent) {
-            if (!chats[peerId]) chats[peerId] = { name: peerId, messages: [] };
+            if (!chats[peerId]) {
+                chats[peerId] = { name: peerId, messages: [] };
+            }
             chats[peerId].messages.push({ text, isSent, time: new Date() });
             saveChats();
-            if (currentChat === peerId) renderMessages();
+            if (currentPeer === peerId) renderMessages();
             renderChats();
         }
 
         function renderMessages() {
             let container = document.getElementById('messages');
-            if (!currentChat || !chats[currentChat]) {
+            if (!currentPeer || !chats[currentPeer]) {
                 container.innerHTML = '<div style="text-align:center;color:#999;padding:20px">Выберите чат</div>';
                 return;
             }
-            container.innerHTML = chats[currentChat].messages.map(m => `
+            let msgs = chats[currentPeer].messages;
+            container.innerHTML = msgs.map(m => `
                 <div class="message ${m.isSent ? 'sent' : 'received'}">
                     <div>${escapeHtml(m.text)}</div>
                     <div style="font-size:10px;opacity:0.7;margin-top:4px">${new Date(m.time).toLocaleTimeString()}</div>
@@ -401,7 +406,7 @@
                 return bLast - aLast;
             });
             container.innerHTML = sorted.map(id => `
-                <div class="chat-item ${currentChat === id ? 'active' : ''}" onclick="selectChat('${id}')">
+                <div class="chat-item ${currentPeer === id ? 'active' : ''}" onclick="selectChat('${id}')">
                     <span>${id.substr(0,12)}...</span>
                     <span>${chats[id].messages.length}</span>
                 </div>
@@ -410,7 +415,6 @@
         }
 
         function selectChat(peerId) {
-            currentChat = peerId;
             currentPeer = peerId;
             document.getElementById('chatTitle').innerHTML = `Чат: ${peerId.substr(0,12)}...`;
             renderMessages();
@@ -428,10 +432,10 @@
 
         function copyUserId() {
             navigator.clipboard.writeText(myId);
-            alert('ID скопирован');
+            alert('✅ ID скопирован');
         }
 
-        // QR код
+        // Генерация QR
         function generateQR() {
             let qrDiv = document.getElementById('qrcode');
             qrDiv.innerHTML = '';
@@ -440,22 +444,23 @@
                 width: 200,
                 height: 200,
                 colorDark: "#000000",
-                colorLight: "#ffffff"
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.M
             });
         }
 
         // Отправить запрос на подключение
         async function sendConnection() {
-            let input = document.getElementById('scanInput').value.trim();
-            if (!input) return alert('Введите ID друга');
-            
-            let targetId = input;
-            if (input.startsWith('{')) {
-                try { targetId = JSON.parse(input); } catch(e) {}
-                if (typeof targetId === 'object') targetId = targetId.id || targetId;
+            let targetId = document.getElementById('scanInput').value.trim();
+            if (!targetId) {
+                alert('Введите ID друга');
+                return;
             }
             
-            if (targetId === myId) return alert('Нельзя подключиться к себе');
+            if (targetId === myId) {
+                alert('Нельзя подключиться к себе');
+                return;
+            }
             
             if (peerConnection) peerConnection.close();
             
@@ -467,58 +472,76 @@
                 document.getElementById('connectionStatus').innerHTML = '✅ Подключено';
                 activeConnections.set(targetId, dataChannel);
                 if (currentPeer === targetId) selectChat(targetId);
-                alert('Соединение установлено!');
+                alert('✅ Соединение установлено!');
             };
             dataChannel.onclose = () => {
                 document.getElementById('sendBtn').disabled = true;
                 document.getElementById('connectionStatus').innerHTML = '❌ Разорвано';
+                activeConnections.delete(targetId);
             };
             dataChannel.onmessage = (e) => {
                 addMessage(targetId, e.data, false);
-                if (currentChat === targetId) renderMessages();
+                if (currentPeer === targetId) renderMessages();
             };
             
-            peerConnection.onicecandidate = (e) => {
-                if (e.candidate) return;
-                // offer готов, показываем его
-                let offerData = {
-                    from: myId,
-                    sdp: peerConnection.localDescription.sdp
-                };
-                let offerText = JSON.stringify(offerData);
-                navigator.clipboard.writeText(offerText);
-                alert('Код скопирован! Отправьте его другу (Telegram/WhatsApp)');
-            };
-            
+            // Собираем offer
             let offer = await peerConnection.createOffer();
             await peerConnection.setLocalDescription(offer);
+            
+            // Ждем ICE кандидатов
+            await new Promise(resolve => {
+                peerConnection.onicecandidate = (e) => {
+                    if (e.candidate === null) resolve();
+                };
+                setTimeout(resolve, 2000);
+            });
+            
+            // Отправляем запрос другу
+            let offerData = {
+                from: myId,
+                sdp: peerConnection.localDescription.sdp
+            };
+            let offerText = JSON.stringify(offerData);
+            
+            // Копируем в буфер и показываем уведомление
+            navigator.clipboard.writeText(offerText);
+            alert(`✅ Код запроса скопирован!\n\nОтправьте его другу любым способом (Telegram, WhatsApp)\n\nДруг должен вставить этот код в поле "Вставить запрос"`);
         }
 
-        // Принять запрос (показывается когда кто-то хочет подключиться)
-        function showRequest(fromId, offerSdp) {
+        // Показать входящий запрос
+        function showIncomingRequest(fromId, offerSdp) {
+            pendingOffer = { fromId, offerSdp };
+            
             let modal = document.getElementById('requestModal');
-            document.getElementById('requestContent').innerHTML = `
+            modal.innerHTML = `
                 <div style="text-align:center">
                     <div style="font-size:48px;margin-bottom:10px">🔔</div>
-                    <div style="font-weight:600;margin-bottom:5px">${fromId.substr(0,16)}...</div>
-                    <div style="font-size:12px;color:#666;margin-bottom:15px">хочет подключиться</div>
-                    <div style="display:flex;gap:10px">
-                        <button class="btn btn-success" onclick="acceptRequest('${fromId}', \`${offerSdp}\`)">✅ Принять</button>
-                        <button class="btn btn-danger" onclick="closeRequest()">❌ Отклонить</button>
+                    <div style="font-weight:600;font-size:16px;margin-bottom:5px">${fromId.substr(0,20)}...</div>
+                    <div style="font-size:13px;color:#666;margin-bottom:15px">хочет подключиться</div>
+                    <div class="request-buttons">
+                        <button class="btn-success" onclick="acceptRequest()" style="background:#10b981;color:white">✅ Принять</button>
+                        <button class="btn-danger" onclick="rejectRequest()" style="background:#ef4444;color:white">❌ Отклонить</button>
                     </div>
                 </div>
             `;
             modal.style.display = 'block';
-            setTimeout(() => modal.style.display = 'none', 30000);
+            
+            // Автоматически скрыть через 30 секунд
+            setTimeout(() => {
+                if (modal.style.display === 'block') modal.style.display = 'none';
+            }, 30000);
         }
 
-        function closeRequest() {
+        function rejectRequest() {
             document.getElementById('requestModal').style.display = 'none';
-            pendingRequest = null;
+            pendingOffer = null;
         }
 
-        window.acceptRequest = async function(fromId, offerSdp) {
-            closeRequest();
+        window.acceptRequest = async function() {
+            if (!pendingOffer) return;
+            
+            let { fromId, offerSdp } = pendingOffer;
+            document.getElementById('requestModal').style.display = 'none';
             
             if (peerConnection) peerConnection.close();
             
@@ -531,13 +554,16 @@
                     document.getElementById('connectionStatus').innerHTML = '✅ Подключено';
                     activeConnections.set(fromId, dataChannel);
                     if (currentPeer === fromId) selectChat(fromId);
+                    alert('✅ Соединение установлено!');
                 };
                 dataChannel.onclose = () => {
                     document.getElementById('sendBtn').disabled = true;
+                    document.getElementById('connectionStatus').innerHTML = '❌ Разорвано';
+                    activeConnections.delete(fromId);
                 };
                 dataChannel.onmessage = (e) => {
                     addMessage(fromId, e.data, false);
-                    if (currentChat === fromId) renderMessages();
+                    if (currentPeer === fromId) renderMessages();
                 };
             };
             
@@ -546,23 +572,58 @@
             let answer = await peerConnection.createAnswer();
             await peerConnection.setLocalDescription(answer);
             
+            await new Promise(resolve => {
+                peerConnection.onicecandidate = (e) => {
+                    if (e.candidate === null) resolve();
+                };
+                setTimeout(resolve, 2000);
+            });
+            
             let answerData = {
                 type: 'answer',
                 sdp: peerConnection.localDescription.sdp
             };
             let answerText = JSON.stringify(answerData);
+            
             navigator.clipboard.writeText(answerText);
-            alert('Ответ скопирован! Отправьте его другу');
+            alert(`✅ Код ответа скопирован!\n\nОтправьте его другу\n\nДруг должен вставить этот код в поле "Вставить ответ"`);
+            pendingOffer = null;
         };
 
-        // Обработка ответа (когда друг прислал answer)
-        window.receiveAnswer = async function(answerText) {
+        // Обработка ответа от друга
+        window.handleAnswer = async function(answerText) {
             try {
                 let data = JSON.parse(answerText);
                 if (data.type === 'answer' && peerConnection) {
                     await peerConnection.setRemoteDescription(new RTCSessionDescription(data));
+                    alert('✅ Соединение подтверждено!');
                 }
-            } catch(e) {}
+            } catch(e) {
+                alert('Ошибка при обработке ответа');
+            }
+        };
+
+        // Вставить запрос от друга (единственный способ получить запрос)
+        window.pasteOffer = function() {
+            let text = prompt('📨 Вставьте код запроса от друга:');
+            if (!text) return;
+            try {
+                let data = JSON.parse(text);
+                if (data.from && data.sdp) {
+                    showIncomingRequest(data.from, data.sdp);
+                } else {
+                    alert('Неверный формат');
+                }
+            } catch(e) {
+                alert('Неверный формат');
+            }
+        };
+
+        // Вставить ответ от друга
+        window.pasteAnswer = function() {
+            let text = prompt('📨 Вставьте код ответа от друга:');
+            if (!text) return;
+            handleAnswer(text);
         };
 
         function sendMessage() {
@@ -582,51 +643,44 @@
             renderMessages();
         }
 
-        function escapeHtml(s) { return s.replace(/[&<>]/g, function(c) {
-            if(c === '&') return '&amp;';
-            if(c === '<') return '&lt;';
-            if(c === '>') return '&gt;';
-            return c;
-        }); }
+        function escapeHtml(s) {
+            return s.replace(/[&<>]/g, function(c) {
+                if(c === '&') return '&amp;';
+                if(c === '<') return '&lt;';
+                if(c === '>') return '&gt;';
+                return c;
+            });
+        }
 
-        // Глобальный обработчик вставки запроса (друг копирует offer и вставляет)
-        window.handleIncomingOffer = function() {
-            let txt = prompt('Вставьте код запроса от друга:');
-            if (!txt) return;
-            try {
-                let data = JSON.parse(txt);
-                if (data.from && data.sdp) {
-                    showRequest(data.from, data.sdp);
-                }
-            } catch(e) { alert('Неверный формат'); }
-        };
-
-        // Глобальный обработчик вставки ответа
-        window.handleIncomingAnswer = function() {
-            let txt = prompt('Вставьте код ответа от друга:');
-            if (!txt) window.receiveAnswer(txt);
-        };
+        // Добавляем кнопки для вставки запроса и ответа (только они нужны для обмена)
+        function addButtons() {
+            let container = document.querySelector('.scan-section');
+            let btnDiv = document.createElement('div');
+            btnDiv.style.marginTop = '10px';
+            btnDiv.style.display = 'flex';
+            btnDiv.style.gap = '8px';
+            btnDiv.innerHTML = `
+                <button class="btn btn-primary" onclick="pasteOffer()" style="flex:1; margin:0">📨 Вставить запрос</button>
+                <button class="btn btn-primary" onclick="pasteAnswer()" style="flex:1; margin:0">📨 Вставить ответ</button>
+            `;
+            container.appendChild(btnDiv);
+        }
 
         // Инициализация
         document.getElementById('userId').innerHTML = myId;
         document.getElementById('avatar').innerHTML = myId[0];
         generateQR();
         renderChats();
-        
-        // Добавляем кнопки для вставки
-        let btns = document.createElement('div');
-        btns.style.marginTop = '10px';
-        btns.innerHTML = `
-            <button class="btn btn-primary" onclick="handleIncomingOffer()" style="margin-bottom:8px">📨 Вставить запрос от друга</button>
-            <button class="btn btn-primary" onclick="handleIncomingAnswer()">📨 Вставить ответ от друга</button>
-        `;
-        document.querySelector('.scan-section').appendChild(btns);
+        addButtons();
         
         document.getElementById('messageInput').onkeypress = (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
         };
         
-        alert('Ваш ID: ' + myId + '\n\nДруг сканирует QR → вы получаете запрос → принимаете → общаетесь');
+        alert(`🔑 Ваш ID: ${myId}\n\n📱 Друг сканирует QR или вводит ваш ID\n📨 Вы вставляете его запрос\n✅ Принимаете\n🔗 Общаетесь`);
     </script>
 </body>
 </html>
